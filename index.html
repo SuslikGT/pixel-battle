@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пиксель Баттл</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #1a1a2e;
+            color: white;
+            text-align: center;
+        }
+        canvas {
+            border: 2px solid #eee;
+            cursor: crosshair;
+            image-rendering: pixelated;
+        }
+        .controls {
+            margin: 10px 0;
+        }
+        .color-picker {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin: 10px 0;
+        }
+        .color-btn {
+            width: 30px;
+            height: 30px;
+            border: 2px solid #fff;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .color-btn.active {
+            border-color: #ffff00;
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 Пиксель Баттл</h1>
+    <div class="controls">
+        <button onclick="clearCanvas()">Очистить</button>
+        <button onclick="zoomIn()">+</button>
+        <button onclick="zoomOut()">-</button>
+    </div>
+    <div class="color-picker" id="colorPicker"></div>
+    <canvas id="canvas"></canvas>
+
+    <script src="app.js"></script>
+</body>
+</html>
