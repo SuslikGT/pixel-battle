@@ -33,7 +33,6 @@
             align-items: center;
         }
 
-        /* Scanline overlay */
         body::before {
             content: '';
             position: fixed;
@@ -49,7 +48,6 @@
             z-index: 9999;
         }
 
-        /* Ambient glow corners */
         body::after {
             content: '';
             position: fixed;
@@ -73,7 +71,6 @@
             gap: 20px;
         }
 
-        /* Header */
         header {
             text-align: center;
             padding: 8px 0;
@@ -105,7 +102,112 @@
             text-transform: uppercase;
         }
 
-        /* Stats bar */
+        /* Auth section */
+        .auth-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 24px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .auth-panel button {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85rem;
+            letter-spacing: 0.08em;
+            padding: 10px 24px;
+            border-radius: 6px;
+            border: 1px solid var(--accent);
+            background: rgba(0,240,255,0.1);
+            color: var(--accent);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .auth-panel button:hover {
+            background: rgba(0,240,255,0.2);
+            box-shadow: var(--glow);
+        }
+
+        .user-info {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .user-info img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+        }
+
+        .user-info span {
+            color: var(--text);
+            font-size: 0.85rem;
+        }
+
+        .user-info .badge {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: var(--accent2);
+            color: white;
+            letter-spacing: 0.1em;
+        }
+
+        .user-info button {
+            padding: 6px 14px;
+            font-size: 0.72rem;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text-dim);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .user-info button:hover {
+            border-color: #ff4455;
+            color: #ff4455;
+        }
+
+        /* Cooldown bar - fixed position, no layout shift */
+        .cooldown-bar {
+            width: 100%;
+            max-width: 300px;
+            height: 4px;
+            background: var(--surface2);
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 8px auto 0;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s;
+        }
+
+        .cooldown-bar.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .cooldown-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .cooldown-text {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            margin-top: 4px;
+            text-align: center;
+            min-height: 16px;
+        }
+
         .stats-bar {
             display: flex;
             gap: 24px;
@@ -131,7 +233,6 @@
             font-weight: 700;
         }
 
-        /* Panel */
         .panel {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -148,7 +249,6 @@
             margin-bottom: 12px;
         }
 
-        /* Color palette */
         .color-grid {
             display: flex;
             flex-wrap: wrap;
@@ -176,21 +276,6 @@
             box-shadow: 0 0 10px rgba(255,255,255,0.5);
         }
 
-        /* Eraser */
-        .color-swatch.eraser {
-            background: var(--surface2) !important;
-            border-color: var(--border) !important;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .color-swatch.eraser.active {
-            border-color: #fff !important;
-        }
-
-        /* Custom color */
         .color-swatch.custom-color {
             overflow: hidden;
         }
@@ -205,7 +290,6 @@
             border: none;
         }
 
-        /* Controls */
         .controls-row {
             display: flex;
             gap: 10px;
@@ -246,34 +330,14 @@
             background: rgba(0,240,255,0.08);
         }
 
-        /* Brush size */
-        .size-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.72rem;
-            color: var(--text-dim);
+        .zoom-display {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem;
+            color: var(--accent);
+            min-width: 48px;
+            text-align: center;
         }
 
-        .size-dots {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-        }
-
-        .size-dot {
-            border-radius: 50%;
-            background: var(--text-dim);
-            cursor: pointer;
-            transition: background 0.15s, transform 0.15s;
-        }
-
-        .size-dot.active {
-            background: var(--accent);
-            transform: scale(1.2);
-        }
-
-        /* Canvas area */
         .canvas-wrap {
             position: relative;
             display: inline-block;
@@ -291,13 +355,6 @@
             image-rendering: pixelated;
         }
 
-        /* Mini preview */
-        .preview-wrap {
-            display: flex;
-            gap: 16px;
-            align-items: flex-start;
-        }
-
         .preview-canvas {
             border: 1px solid var(--border);
             border-radius: 6px;
@@ -312,16 +369,6 @@
             margin-bottom: 5px;
         }
 
-        /* Zoom display */
-        .zoom-display {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.85rem;
-            color: var(--accent);
-            min-width: 48px;
-            text-align: center;
-        }
-
-        /* Footer */
         .footer-hint {
             font-size: 0.62rem;
             color: var(--text-dim);
@@ -329,7 +376,6 @@
             text-align: center;
         }
 
-        /* Tooltip on color swatch */
         .color-swatch::after {
             content: attr(data-name);
             position: absolute;
@@ -349,11 +395,164 @@
 
         .color-swatch:hover::after { opacity: 1; }
 
-        /* Separator */
         .sep {
             width: 1px;
             height: 22px;
             background: var(--border);
+        }
+
+        .alert {
+            background: rgba(255, 60, 172, 0.1);
+            border: 1px solid var(--accent2);
+            color: var(--accent2);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            text-align: center;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .admin-only {
+            display: none !important;
+        }
+
+        .admin-only.visible {
+            display: flex !important;
+        }
+
+        /* Lobby selector */
+        .lobby-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .lobby-btn {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.72rem;
+            padding: 6px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .lobby-btn:hover, .lobby-btn.active {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(0,240,255,0.08);
+        }
+
+        .lobby-input {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.72rem;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text);
+            width: 120px;
+        }
+
+        /* Chat */
+        .chat-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .chat-message {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: var(--surface2);
+            word-break: break-word;
+        }
+
+        .chat-message .msg-user {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .chat-message .msg-text {
+            color: var(--text);
+        }
+
+        .chat-input-row {
+            display: flex;
+            gap: 8px;
+            padding: 10px;
+            border-top: 1px solid var(--border);
+        }
+
+        .chat-input {
+            flex: 1;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text);
+        }
+
+        .chat-send {
+            padding: 6px 14px;
+            border-radius: 4px;
+            border: 1px solid var(--accent);
+            background: rgba(0,240,255,0.1);
+            color: var(--accent);
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.72rem;
+        }
+
+        .chat-send:hover {
+            background: rgba(0,240,255,0.2);
+        }
+
+        /* Layout for canvas + chat */
+        .main-layout {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        .canvas-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
     </style>
 </head>
@@ -362,8 +561,43 @@
 
     <header>
         <div class="logo">⬛ ПИКСЕЛЬ БАТТЛ</div>
-        <div class="subtitle">pixel art studio · v2.0</div>
+        <div class="subtitle">pixel art studio · v3.0</div>
     </header>
+
+    <!-- Auth -->
+    <div class="auth-panel" id="authPanel">
+        <div id="loginSection">
+            <button onclick="signInWithGoogle()">🔑 Войти через Google</button>
+            <p style="font-size:0.7rem; color:var(--text-dim); margin-top:8px;">Вход обязателен для рисования</p>
+        </div>
+        <div class="user-info" id="userSection">
+            <img id="userAvatar" src="" alt="">
+            <span id="userName"></span>
+            <span class="badge" id="adminBadge" style="display:none;">ADMIN</span>
+            <button onclick="signOut()">Выйти</button>
+        </div>
+        <div class="cooldown-bar" id="cooldownBar">
+            <div class="cooldown-fill" id="cooldownFill"></div>
+        </div>
+        <div class="cooldown-text" id="cooldownText"></div>
+    </div>
+
+    <div class="alert" id="alertBox"></div>
+
+    <!-- Lobby Selector -->
+    <div class="panel">
+        <div class="panel-label">🚪 Лобби</div>
+        <div class="lobby-row">
+            <button class="lobby-btn active" onclick="joinLobby('main')">🏠 Главное</button>
+            <button class="lobby-btn" onclick="joinLobby('friends')">👥 Друзья</button>
+            <button class="lobby-btn" onclick="joinLobby('random')">🎲 Случайное</button>
+            <input type="text" class="lobby-input" id="lobbyInput" placeholder="Новое лобби..." maxlength="20">
+            <button class="btn" onclick="createLobby()">➕ Создать\Присоединиться</button>
+        </div>
+        <div style="text-align:center; margin-top:8px; font-size:0.7rem; color:var(--text-dim);">
+            Текущее лобби: <span id="currentLobby" style="color:var(--accent);">main</span>
+        </div>
+    </div>
 
     <!-- Stats -->
     <div class="stats-bar">
@@ -391,24 +625,31 @@
         <div class="color-grid" id="colorGrid"></div>
     </div>
 
-    <!-- Tools & Controls -->
-    <div class="panel">
-        <div class="panel-label">🛠 Инструменты</div>
-        <div style="display:flex; flex-direction:column; gap:12px;">
+    <!-- Zoom only for users, full tools for admin -->
+    <div class="panel" id="zoomPanel">
+        <div class="panel-label">🔍 Масштаб</div>
+        <div class="controls-row">
+            <button class="btn" onclick="zoomIn()">＋ Zoom</button>
+            <span class="zoom-display" id="zoomLabel">1×</span>
+            <button class="btn" onclick="zoomOut()">－ Zoom</button>
+            <div class="sep"></div>
+            <button class="btn" onclick="exportPNG()">💾 Экспорт PNG</button>
+        </div>
+    </div>
 
+    <!-- Admin tools (hidden for regular users) -->
+    <div class="panel admin-only" id="adminToolsPanel">
+        <div class="panel-label">🛠 Инструменты администрации</div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
             <div class="controls-row">
                 <button class="btn active-tool" id="btnPencil" onclick="setTool('pencil')">✏️ Карандаш</button>
                 <button class="btn" id="btnFill" onclick="setTool('fill')">🪣 Заливка</button>
                 <button class="btn" id="btnEraser" onclick="setTool('eraser')">🧹 Ластик</button>
                 <div class="sep"></div>
-                <button class="btn" onclick="zoomIn()">＋ Zoom</button>
-                <span class="zoom-display" id="zoomLabel">1×</span>
-                <button class="btn" onclick="zoomOut()">－ Zoom</button>
-                <div class="sep"></div>
                 <button class="btn" onclick="undo()">↩ Undo</button>
                 <button class="btn danger" onclick="clearCanvas()">🗑 Очистить</button>
+                <button class="btn danger" onclick="clearAll()">💥 Очистить всё</button>
             </div>
-
             <div class="size-row">
                 <span>Размер кисти:</span>
                 <div class="size-dots" id="sizeDots">
@@ -418,38 +659,82 @@
                     <div class="size-dot" data-size="5" style="width:20px;height:20px;" onclick="setBrush(5)"></div>
                 </div>
             </div>
-
         </div>
     </div>
 
-    <!-- Canvas -->
-    <div style="display:flex; gap:16px; flex-wrap:wrap; justify-content:center; align-items:flex-start;">
-        <div>
+    <!-- Main layout: Canvas + Chat -->
+    <div class="main-layout">
+        <div class="canvas-area">
             <div class="preview-label" style="text-align:center; margin-bottom:6px; font-size:0.6rem; color:var(--text-dim); letter-spacing:0.2em;">АРЕНА</div>
             <div class="canvas-wrap">
                 <canvas id="canvas"></canvas>
             </div>
         </div>
-        <div>
-            <div class="preview-label">ПРЕВЬЮ</div>
-            <canvas id="previewCanvas" class="preview-canvas" width="120" height="120"></canvas>
+        <div class="side-panel">
+            <div>
+                <div class="preview-label">ПРЕВЬЮ</div>
+                <canvas id="previewCanvas" class="preview-canvas" width="120" height="120"></canvas>
+            </div>
+            <!-- Chat -->
+            <div class="chat-panel">
+                <div class="panel-label" style="margin:0; padding:10px 12px; border-bottom:1px solid var(--border);">💬 Чат</div>
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="chat-input-row">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="Сообщение..." maxlength="100" onkeypress="if(event.key==='Enter')sendChat()">
+                    <button class="chat-send" onclick="sendChat()">➤</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="footer-hint">ЛКМ — рисовать · ПКМ — пипетка · Колесо — масштаб · Ctrl+Z — отмена</div>
+    <div class="footer-hint" id="footerHint">ЛКМ — рисовать · ПКМ — пипетка · Колесо — масштаб</div>
 
 </div>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
 <script>
-// ─── Config ───────────────────────────────────────────────────────────────────
-const GRID_W = 48;
-const GRID_H = 48;
-const BASE_PIXEL = 12;
+    const firebaseConfig = {
+  apiKey: "AIzaSyCalUZI_JXpTs7mm3d8NgqjgA6-R3U3nos",
+  authDomain: "pixel-battle-v2.firebaseapp.com",
+  projectId: "pixel-battle-v2",
+  storageBucket: "pixel-battle-v2.firebasestorage.app",
+  messagingSenderId: "131375871960",
+  appId: "1:131375871960:web:ddeb770cc7e95d5b38a4ad"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // ====== ADMIN_UIDS ======
+    // Вставь сюда свой UID после первого входа
+    const ADMIN_UIDS = ["Y0dVRADqUbbsv4Tj0tkOHuEBinF3"];
+</script>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════════
+// ═══ КОНФИГУРАЦИЯ: Изменяй эти параметры под свои нужды ════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const GRID_W = 124;           // ← ШИРИНА ПОЛЯ (было 48, теперь 80)
+const GRID_H = 124;           // ← ВЫСОТА ПОЛЯ (было 48, теперь 80)
+const BASE_PIXEL = 10;       // ← Базовый размер пикселя (уменьшил с 12 до 10 для большего поля)
 const GRID_COLOR = 'rgba(255,255,255,0.07)';
 
-// ─── Palette ──────────────────────────────────────────────────────────────────
+// ═══ КУЛДАУН: Время ожидания между рисованием для обычных пользователей (в миллисекундах) ═══
+// 5000 = 5 секунд | 10000 = 10 секунд | 3000 = 3 секунды
+const COOLDOWN_MS = 5000;
+
+// ═══ ЦВЕТ ПУСТОЙ ЯЧЕЙКИ: Цвет, в который можно "стереть" закрашенный пиксель ═══
+const EMPTY_CELL_COLOR = '#0d0d1e';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+
 const COLORS = [
-    // Blacks & Whites
     { hex: '#000000', name: 'Чёрный' },
     { hex: '#1a1a1a', name: 'Почти чёрный' },
     { hex: '#3d3d3d', name: 'Тёмно-серый' },
@@ -457,36 +742,30 @@ const COLORS = [
     { hex: '#999999', name: 'Светло-серый' },
     { hex: '#cccccc', name: 'Почти белый' },
     { hex: '#ffffff', name: 'Белый' },
-    // Reds
     { hex: '#ff0000', name: 'Красный' },
     { hex: '#cc0000', name: 'Тёмно-красный' },
     { hex: '#ff4444', name: 'Светло-красный' },
     { hex: '#ff6b6b', name: 'Лососевый' },
     { hex: '#8b0000', name: 'Бордовый' },
-    // Oranges
     { hex: '#ff6600', name: 'Оранжевый' },
     { hex: '#ff8c00', name: 'Тёмно-оранжевый' },
     { hex: '#ffa500', name: 'Апельсин' },
     { hex: '#ffb347', name: 'Персик' },
-    // Yellows
     { hex: '#ffff00', name: 'Жёлтый' },
     { hex: '#ffd700', name: 'Золото' },
     { hex: '#ffe66d', name: 'Лимон' },
     { hex: '#f0e68c', name: 'Хаки' },
-    // Greens
     { hex: '#00ff00', name: 'Лайм' },
     { hex: '#228b22', name: 'Лесной' },
     { hex: '#32cd32', name: 'Зелёный' },
     { hex: '#90ee90', name: 'Светло-зелёный' },
     { hex: '#006400', name: 'Тёмно-зелёный' },
     { hex: '#adff2f', name: 'Жёлто-зелёный' },
-    // Cyans
     { hex: '#00ffff', name: 'Циан' },
     { hex: '#00f0ff', name: 'Неон-циан' },
     { hex: '#00ced1', name: 'Бирюза' },
     { hex: '#20b2aa', name: 'Морской' },
     { hex: '#008b8b', name: 'Тёмн. бирюза' },
-    // Blues
     { hex: '#0000ff', name: 'Синий' },
     { hex: '#0000cd', name: 'Тёмно-синий' },
     { hex: '#4169e1', name: 'Королевский' },
@@ -494,7 +773,6 @@ const COLORS = [
     { hex: '#87ceeb', name: 'Небесный' },
     { hex: '#1e90ff', name: 'Ярко-синий' },
     { hex: '#000080', name: 'Нейви' },
-    // Purples & Pinks
     { hex: '#ff00ff', name: 'Маджента' },
     { hex: '#ff3cac', name: 'Неон-пинк' },
     { hex: '#800080', name: 'Фиолетовый' },
@@ -502,24 +780,32 @@ const COLORS = [
     { hex: '#da70d6', name: 'Орхидея' },
     { hex: '#ff69b4', name: 'Горячий розовый' },
     { hex: '#ffb6c1', name: 'Светло-розовый' },
-    // Browns & Skin
     { hex: '#8b4513', name: 'Коричневый' },
     { hex: '#a0522d', name: 'Сиена' },
     { hex: '#cd853f', name: 'Перу' },
     { hex: '#deb887', name: 'Буровато-жёлтый' },
     { hex: '#f4a460', name: 'Песок' },
     { hex: '#ffe4c4', name: 'Бисквит' },
+    { hex: EMPTY_CELL_COLOR, name: 'Стереть (пусто)' },
 ];
 
 // ─── State ─────────────────────────────────────────────────────────────────────
 let pixelData = new Array(GRID_W * GRID_H).fill(null);
-let currentColor = COLORS[7].hex; // red default
+let currentColor = COLORS[7].hex;
 let zoom = 1;
-let tool = 'pencil'; // pencil | fill | eraser
+let tool = 'pencil';
 let brushSize = 1;
 let isDrawing = false;
 let history = [];
 const MAX_HISTORY = 40;
+
+let currentUser = null;
+let isAdmin = false;
+let lastPaintTime = 0;
+let cooldownTimer = null;
+let currentLobby = 'main';
+let chatUnsubscribe = null;
+let pixelsUnsubscribe = null;
 
 // ─── Canvas setup ─────────────────────────────────────────────────────────────
 const canvas = document.getElementById('canvas');
@@ -536,6 +822,153 @@ function resizeCanvas() {
     render();
 }
 
+// ─── Auth functions ───────────────────────────────────────────────────────────
+function signInWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(err => {
+        showAlert('Ошибка входа: ' + err.message);
+    });
+}
+
+function signOut() {
+    auth.signOut();
+}
+
+function showAlert(msg) {
+    const box = document.getElementById('alertBox');
+    box.textContent = msg;
+    box.classList.add('show');
+    setTimeout(() => box.classList.remove('show'), 4000);
+}
+
+// ─── Admin check & UI update ────────────────────────────────────────────────────
+function checkAdmin() {
+    isAdmin = currentUser && ADMIN_UIDS.includes(currentUser.uid);
+    updateUIForRole();
+}
+
+function updateUIForRole() {
+    const adminPanel = document.getElementById('adminToolsPanel');
+    
+    if (isAdmin) {
+        adminPanel.classList.add('visible');
+        document.getElementById('adminBadge').style.display = 'inline-block';
+        document.getElementById('footerHint').textContent = 'ADMIN: ЛКМ — рисовать · ПКМ — пипетка · Колесо — масштаб · Заливка/ластик/Undo доступны';
+    } else {
+        adminPanel.classList.remove('visible');
+        document.getElementById('adminBadge').style.display = 'none';
+        document.getElementById('footerHint').textContent = 'ЛКМ — рисовать (1 пиксель) · ПКМ — пипетка · Колесо — масштаб · Кулдаун ' + (COOLDOWN_MS / 1000) + 'сек';
+    }
+}
+
+// ─── Cooldown ───────────────────────────────────────────────────────────────────
+function startCooldown() {
+    if (isAdmin) return;
+    
+    lastPaintTime = Date.now();
+    const bar = document.getElementById('cooldownBar');
+    const fill = document.getElementById('cooldownFill');
+    const text = document.getElementById('cooldownText');
+    
+    bar.classList.add('active');
+    
+    if (cooldownTimer) clearInterval(cooldownTimer);
+    
+    cooldownTimer = setInterval(() => {
+        const elapsed = Date.now() - lastPaintTime;
+        const remaining = Math.max(0, COOLDOWN_MS - elapsed);
+        const percent = ((COOLDOWN_MS - remaining) / COOLDOWN_MS) * 100;
+        
+        fill.style.width = percent + '%';
+        text.textContent = remaining > 0 ? `Кулдаун: ${(remaining / 1000).toFixed(1)}с` : 'Готово к рисованию!';
+        
+        if (remaining <= 0) {
+            clearInterval(cooldownTimer);
+            bar.classList.remove('active');
+            text.textContent = '';
+        }
+    }, 100);
+}
+
+function canPaint() {
+    if (!currentUser) {
+        showAlert('Сначала войдите через Google!');
+        return false;
+    }
+    if (isAdmin) return true;
+    
+    const elapsed = Date.now() - lastPaintTime;
+    if (elapsed < COOLDOWN_MS) {
+        showAlert(`Подождите ${((COOLDOWN_MS - elapsed) / 1000).toFixed(1)}с`);
+        return false;
+    }
+    return true;
+}
+
+// ─── Auth state listener ────────────────────────────────────────────────────────
+auth.onAuthStateChanged(user => {
+    currentUser = user;
+    
+    if (user) {
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('userSection').style.display = 'flex';
+        document.getElementById('userName').textContent = user.displayName || user.email;
+        document.getElementById('userAvatar').src = user.photoURL || '';
+        
+        checkAdmin();
+        joinLobby(currentLobby);
+        
+        console.log('Твой UID:', user.uid);
+    } else {
+        document.getElementById('loginSection').style.display = 'block';
+        document.getElementById('userSection').style.display = 'none';
+        document.getElementById('userName').textContent = '';
+        document.getElementById('userAvatar').src = '';
+        isAdmin = false;
+        updateUIForRole();
+    }
+});
+
+// ─── Lobby functions ────────────────────────────────────────────────────────────
+function joinLobby(lobbyName) {
+    if (!lobbyName || lobbyName.trim() === '') return;
+    
+    currentLobby = lobbyName.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    document.getElementById('currentLobby').textContent = currentLobby;
+    
+    // Update UI
+    document.querySelectorAll('.lobby-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Clear canvas
+    pixelData.fill(null);
+    render();
+    
+    // Unsubscribe from old listeners
+    if (pixelsUnsubscribe) pixelsUnsubscribe();
+    if (chatUnsubscribe) chatUnsubscribe();
+    
+    // Subscribe to new lobby pixels
+    loadLobbyPixels();
+    
+    // Subscribe to new lobby chat
+    loadLobbyChat();
+    
+    showAlert(`Присоединился к лобби: ${currentLobby}`);
+}
+
+function createLobby() {
+    const input = document.getElementById('lobbyInput');
+    const name = input.value.trim();
+    if (!name) {
+        showAlert('Введите название лобби');
+        return;
+    }
+    input.value = '';
+    joinLobby(name);
+}
+
 // ─── Render ───────────────────────────────────────────────────────────────────
 function render() {
     const ps = pixelSize();
@@ -550,20 +983,16 @@ function render() {
                 ctx.fillStyle = color;
                 ctx.fillRect(x * ps, y * ps, ps, ps);
             } else {
-                // Subtle checkerboard for empty
-                const even = (x + y) % 2 === 0;
-                ctx.fillStyle = even ? '#0d0d1e' : '#111128';
+                ctx.fillStyle = EMPTY_CELL_COLOR;
                 ctx.fillRect(x * ps, y * ps, ps, ps);
-
-                // Grid lines only on empty pixels
-                ctx.fillStyle = GRID_COLOR;
-                ctx.fillRect(x * ps, y * ps, ps, 1);       // top
-                ctx.fillRect(x * ps, y * ps, 1, ps);       // left
             }
+            
+            ctx.fillStyle = GRID_COLOR;
+            ctx.fillRect(x * ps, y * ps, ps, 1);
+            ctx.fillRect(x * ps, y * ps, 1, ps);
         }
     }
 
-    // Right and bottom edge grid lines
     for (let x = 0; x <= GRID_W; x++) {
         ctx.fillStyle = GRID_COLOR;
         ctx.fillRect(x * ps, 0, 1, GRID_H * ps);
@@ -589,6 +1018,9 @@ function renderPreview() {
             if (color) {
                 pctx.fillStyle = color;
                 pctx.fillRect(x * sx, y * sy, sx, sy);
+            } else {
+                pctx.fillStyle = EMPTY_CELL_COLOR;
+                pctx.fillRect(x * sx, y * sy, sx, sy);
             }
         }
     }
@@ -604,7 +1036,6 @@ function getPixelCoord(e) {
 }
 
 function paintPixel(x, y) {
-    const ps = pixelSize();
     const half = Math.floor(brushSize / 2);
     for (let dy = -half; dy < brushSize - half; dy++) {
         for (let dx = -half; dx < brushSize - half; dx++) {
@@ -634,6 +1065,10 @@ function pushHistory() {
 }
 
 function undo() {
+    if (!isAdmin) {
+        showAlert('🔒 Undo только для администрации');
+        return;
+    }
     if (history.length === 0) return;
     pixelData = history.pop();
     render();
@@ -642,21 +1077,39 @@ function undo() {
 // ─── Events ───────────────────────────────────────────────────────────────────
 canvas.addEventListener('mousedown', e => {
     if (e.button === 2) {
-        // Eyedropper (right click)
         const { x, y } = getPixelCoord(e);
         const c = pixelData[y * GRID_W + x];
         if (c) { currentColor = c; highlightColor(c); }
         return;
     }
-    pushHistory();
+    
+    if (!canPaint()) return;
+    
+    if (!isAdmin) {
+        if (tool !== 'pencil') {
+            setTool('pencil');
+        }
+        if (brushSize !== 1) {
+            setBrush(1);
+        }
+    }
+    
+    if (isAdmin) {
+        pushHistory();
+    }
+    
     isDrawing = true;
     const { x, y } = getPixelCoord(e);
+    
     if (tool === 'fill') {
         const idx = y * GRID_W + x;
         floodFill(x, y, pixelData[idx], currentColor);
     } else {
         paintPixel(x, y);
     }
+    
+    savePixel(x, y);
+    startCooldown();
     render();
 });
 
@@ -664,7 +1117,11 @@ canvas.addEventListener('mousemove', e => {
     const { x, y } = getPixelCoord(e);
     document.getElementById('statPos').textContent = `${x},${y}`;
     if (!isDrawing || tool === 'fill') return;
+    
+    if (!isAdmin) return;
+    
     paintPixel(x, y);
+    savePixel(x, y);
     render();
 });
 
@@ -678,14 +1135,21 @@ canvas.addEventListener('wheel', e => {
 }, { passive: false });
 
 document.addEventListener('keydown', e => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'z') undo();
-    if (e.key === 'e') setTool('eraser');
-    if (e.key === 'p') setTool('pencil');
-    if (e.key === 'f') setTool('fill');
+    if (isAdmin && (e.ctrlKey || e.metaKey) && e.key === 'z') undo();
+    if (isAdmin) {
+        if (e.key === 'e') setTool('eraser');
+        if (e.key === 'p') setTool('pencil');
+        if (e.key === 'f') setTool('fill');
+    }
 });
 
 // ─── Tool switching ───────────────────────────────────────────────────────────
 function setTool(t) {
+    if (!isAdmin && (t === 'fill' || t === 'eraser')) {
+        showAlert('🔒 Заливка и ластик только для администрации');
+        return;
+    }
+    
     tool = t;
     ['btnPencil','btnFill','btnEraser'].forEach(id => {
         document.getElementById(id)?.classList.remove('active-tool');
@@ -695,6 +1159,12 @@ function setTool(t) {
 }
 
 function setBrush(size) {
+    console.log('setBrush called:', size, 'isAdmin:', isAdmin);
+    if (!isAdmin && size !== 1) {
+        showAlert('🔒 Размер кисти >1 только для администрации');
+        return;
+    }
+    
     brushSize = size;
     document.querySelectorAll('.size-dot').forEach(d => {
         d.classList.toggle('active', +d.dataset.size === size);
@@ -712,10 +1182,36 @@ function updateZoomLabel() {
 
 // ─── Clear ─────────────────────────────────────────────────────────────────────
 function clearCanvas() {
+    if (!isAdmin) {
+        showAlert('🔒 Очистка только для администрации');
+        return;
+    }
     if (!confirm('Очистить холст?')) return;
     pushHistory();
     pixelData.fill(null);
     render();
+}
+
+function clearAll() {
+    if (!isAdmin) {
+        showAlert('🔒 Только для администрации');
+        return;
+    }
+    if (!confirm('Очистить ВСЁ поле для всех пользователей?')) return;
+    
+    db.collection('lobbies').doc(currentLobby).collection('pixels').get().then(snapshot => {
+        const batch = db.batch();
+        snapshot.forEach(doc => {
+            batch.delete(doc.ref);
+        });
+        return batch.commit();
+    }).then(() => {
+        pixelData.fill(null);
+        render();
+        showAlert('Поле очищено');
+    }).catch(err => {
+        showAlert('Ошибка: ' + err.message);
+    });
 }
 
 // ─── Stats ─────────────────────────────────────────────────────────────────────
@@ -744,7 +1240,6 @@ function buildPalette() {
         grid.appendChild(swatch);
     });
 
-    // Custom color picker
     const custom = document.createElement('div');
     custom.className = 'color-swatch custom-color';
     custom.dataset.name = 'Свой цвет';
@@ -761,17 +1256,122 @@ function buildPalette() {
     custom.appendChild(input);
     grid.appendChild(custom);
 
-    // Eraser in palette
-    const eraser = document.createElement('div');
-    eraser.className = 'color-swatch eraser';
-    eraser.dataset.name = 'Ластик';
-    eraser.dataset.hex = '__eraser__';
-    eraser.textContent = '🧹';
-    eraser.onclick = () => { setTool('eraser'); document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active')); eraser.classList.add('active'); };
-    grid.appendChild(eraser);
-
-    // Highlight initial color
     highlightColor(currentColor);
+}
+
+// ─── Export PNG ─────────────────────────────────────────────────────────────────
+function exportPNG() {
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = GRID_W;
+    exportCanvas.height = GRID_H;
+    const ectx = exportCanvas.getContext('2d');
+    
+    for (let y = 0; y < GRID_H; y++) {
+        for (let x = 0; x < GRID_W; x++) {
+            const color = pixelData[y * GRID_W + x];
+            ectx.fillStyle = color || EMPTY_CELL_COLOR;
+            ectx.fillRect(x, y, 1, 1);
+        }
+    }
+    
+    const link = document.createElement('a');
+    link.download = `pixel-battle-${currentLobby}-${Date.now()}.png`;
+    link.href = exportCanvas.toDataURL('image/png');
+    link.click();
+    
+    showAlert('Изображение сохранено!');
+}
+
+// ─── Chat functions ─────────────────────────────────────────────────────────────
+function sendChat() {
+    if (!currentUser) {
+        showAlert('Сначала войдите');
+        return;
+    }
+    
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+    
+    db.collection('lobbies').doc(currentLobby).collection('chat').add({
+        text: text,
+        userName: currentUser.displayName || 'Аноним',
+        userId: currentUser.uid,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    
+    input.value = '';
+}
+
+function loadLobbyChat() {
+    const chatBox = document.getElementById('chatMessages');
+    chatBox.innerHTML = '';
+    
+    chatUnsubscribe = db.collection('lobbies').doc(currentLobby).collection('chat')
+        .orderBy('timestamp', 'desc')
+        .limit(50)
+        .onSnapshot(snapshot => {
+            chatBox.innerHTML = '';
+            const messages = [];
+            snapshot.forEach(doc => {
+                messages.push(doc.data());
+            });
+            messages.reverse().forEach(msg => {
+                const div = document.createElement('div');
+                div.className = 'chat-message';
+                div.innerHTML = `<span class="msg-user">${escapeHtml(msg.userName)}:</span> <span class="msg-text">${escapeHtml(msg.text)}</span>`;
+                chatBox.appendChild(div);
+            });
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ─── Firestore: Save & Load with Lobbies ───────────────────────────────────────
+function savePixel(x, y) {
+    if (!currentUser) return;
+    
+    const color = tool === 'eraser' ? null : currentColor;
+    const docId = `${x}_${y}`;
+    
+    if (color === null || color === EMPTY_CELL_COLOR) {
+        db.collection('lobbies').doc(currentLobby).collection('pixels').doc(docId).delete();
+    } else {
+        db.collection('lobbies').doc(currentLobby).collection('pixels').doc(docId).set({
+            x: x,
+            y: y,
+            color: color,
+            userId: currentUser.uid,
+            userName: currentUser.displayName || 'Аноним',
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    }
+}
+
+function loadLobbyPixels() {
+    pixelsUnsubscribe = db.collection('lobbies').doc(currentLobby).collection('pixels')
+        .onSnapshot(snapshot => {
+            snapshot.docChanges().forEach(change => {
+                if (change.type === 'added' || change.type === 'modified') {
+                    const data = change.doc.data();
+                    if (data.x >= 0 && data.x < GRID_W && data.y >= 0 && data.y < GRID_H) {
+                        pixelData[data.y * GRID_W + data.x] = data.color;
+                    }
+                }
+                if (change.type === 'removed') {
+                    const data = change.doc.data();
+                    if (data && data.x !== undefined && data.y !== undefined) {
+                        pixelData[data.y * GRID_W + data.x] = null;
+                    }
+                }
+            });
+            render();
+        });
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
@@ -779,4 +1379,5 @@ buildPalette();
 resizeCanvas();
 </script>
 </body>
-</html>
+</html>SuslikGT
+ <!-- (const firebaseConfig = {) -->
