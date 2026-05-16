@@ -134,6 +134,36 @@ body {
 }
 
 .player-card:hover { transform: translateY(-4px); }
+.player-card.selected {
+    transform: scale(1.06) translateY(-4px);
+    box-shadow: 0 0 40px rgba(0,245,255,0.25), inset 0 0 60px rgba(0,245,255,0.06);
+    border-width: 3px;
+    z-index: 10;
+}
+.player-card.retro.selected {
+    box-shadow: 0 0 40px rgba(255,140,0,0.35), inset 0 0 60px rgba(255,140,0,0.08);
+    border-color: var(--retro-gold);
+}
+.player-card.cyber.selected {
+    box-shadow: 0 0 40px rgba(0,245,255,0.35), inset 0 0 60px rgba(0,245,255,0.08);
+    border-color: var(--cyber-neon);
+}
+.player-card.retro.selected .card-header { color: #fff; text-shadow: 0 0 12px var(--retro-gold); }
+.player-card.cyber.selected .card-header { color: #fff; text-shadow: 0 0 12px var(--cyber-neon); }
+.select-hint {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-align: center;
+    margin-top: 10px;
+    opacity: 0.7;
+    animation: selectPulse 1.5s ease-in-out infinite;
+}
+.select-hint-retro { color: var(--retro-gold); font-family: 'VT323', monospace; font-size: 16px; }
+.select-hint-cyber { color: var(--cyber-neon); font-family: 'Share Tech Mono', monospace; }
+@keyframes selectPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
 
 .player-card.retro {
   background: var(--retro-panel);
@@ -1399,10 +1429,10 @@ body {
         <input class="card-name-input" id="p1-name" type="text" placeholder="ENTER NAME..." maxlength="14" value="PLAYER 1">
         <div class="card-style-label">✦ RETRO ARCADE ✦</div>
         <div class="card-keys">
-          SWITCH: KEY [1]<br>
           MOVE: ARROW KEYS<br>
           STYLE: OLD SCHOOL
         </div>
+        <div class="select-hint select-hint-retro">👆 КЛИКНИ ЧТОБЫ ВЫБРАТЬ СТОРОНУ</div>
       </div>
 
       <div class="vs-badge">VS</div>
@@ -1412,10 +1442,10 @@ body {
         <input class="card-name-input" id="p2-name" type="text" placeholder="ENTER NAME..." maxlength="14" value="PLAYER 2">
         <div class="card-style-label">◈ CYBERPUNK 2099 ◈</div>
         <div class="card-keys">
-          SWITCH: KEY [2]<br>
           MOVE: ARROW KEYS<br>
           STYLE: NEON FUTURE
         </div>
+        <div class="select-hint select-hint-cyber">👆 КЛИКНИ ЧТОБЫ ВЫБРАТЬ СТОРОНУ</div>
       </div>
     </div>
 
@@ -1614,6 +1644,27 @@ const state = {
 };
 
 const playerNames = { 1: 'PLAYER 1', 2: 'PLAYER 2' };
+let selectedPlayer = null;
+
+// Menu card selection
+document.addEventListener('DOMContentLoaded', () => {
+    const retroCard = document.querySelector('.player-card.retro');
+    const cyberCard = document.querySelector('.player-card.cyber');
+    if (retroCard) {
+        retroCard.addEventListener('click', () => {
+            selectedPlayer = 1;
+            retroCard.classList.add('selected');
+            if (cyberCard) cyberCard.classList.remove('selected');
+        });
+    }
+    if (cyberCard) {
+        cyberCard.addEventListener('click', () => {
+            selectedPlayer = 2;
+            cyberCard.classList.add('selected');
+            if (retroCard) retroCard.classList.remove('selected');
+        });
+    }
+});
 
 // Firebase Admin
 const firebaseConfig = {
@@ -1688,6 +1739,9 @@ function updateAdminUI() {
 }
 
 function goToPixel() {
+    saveCurrentScores();
+    clearFinalTimer();
+    clearInactivityTimer();
     window.location.href = 'index.html';
 }
 
@@ -1808,6 +1862,10 @@ function startGame() {
     showToast('🔊 Сначала войдите через Google!');
     return;
   }
+  if (!selectedPlayer) {
+    showToast('👆 Выбери сторону: кликни на RETRO или CYBER');
+    return;
+  }
   playerNames[1] = (document.getElementById('p1-name').value.trim() || 'PLAYER 1').toUpperCase();
   playerNames[2] = (document.getElementById('p2-name').value.trim() || 'PLAYER 2').toUpperCase();
   document.getElementById('p1-display').textContent = playerNames[1];
@@ -1815,21 +1873,28 @@ function startGame() {
   resetGame();
   showScreen('screen-game');
   updateAuthUI2048();
+  setActive(selectedPlayer);
 }
 
 function goToMenu() {
   saveCurrentScores();
+  clearFinalTimer();
+  clearInactivityTimer();
+  resetGame();
   showScreen('screen-menu');
 }
 
 function showLeaderboard() {
+  clearInactivityTimer();
   leaderboardFrom = document.querySelector('#screen-game.active') ? 'game' : 'menu';
   renderLeaderboard();
   showScreen('screen-leaderboard');
 }
 
 function leaderboardBack() {
-  showScreen(leaderboardFrom === 'game' ? 'screen-game' : 'screen-menu');
+  const target = leaderboardFrom === 'game' ? 'screen-game' : 'screen-menu';
+  showScreen(target);
+  if (target === 'screen-game') resetInactivityTimer();
 }
 
 function saveCurrentScores() {
@@ -1964,16 +2029,20 @@ function initBoard(p) {
 
 function resetGame() {
   clearFinalTimer();
+  clearInactivityTimer();
   initBoard(1);
   initBoard(2);
-  setActive(1);
+  setActive(selectedPlayer || 1);
   closeModal();
+  resetInactivityTimer();
 }
 
 function resetSingleBoard(p) {
   clearFinalTimer();
+  clearInactivityTimer();
   initBoard(p);
   closeModal();
+  resetInactivityTimer();
 }
 
 function setActive(p) {
@@ -2214,6 +2283,63 @@ function showToast(msg) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
 }
+
+// ========== INACTIVITY TIMER ==========
+let inactivityTimer = null;
+const INACTIVITY_MS = 15000; // 15 seconds
+
+function resetInactivityTimer() {
+    if (inactivityTimer) clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+        if (document.getElementById('screen-game').classList.contains('active')) {
+            saveCurrentScores();
+            clearFinalTimer();
+            resetGame();
+            showToast('⏱ Игра сброшена из-за бездействия');
+            goToMenu();
+        }
+    }, INACTIVITY_MS);
+}
+
+function clearInactivityTimer() {
+    if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = null;
+    }
+}
+
+// Track activity during game
+['mousemove', 'keydown', 'touchstart', 'click'].forEach(evt => {
+    document.addEventListener(evt, () => {
+        if (document.getElementById('screen-game').classList.contains('active')) {
+            resetInactivityTimer();
+        }
+    });
+});
+
+// Auto-clear on page unload / tab close
+window.addEventListener('beforeunload', () => {
+    saveCurrentScores();
+    clearFinalTimer();
+    clearInactivityTimer();
+});
+
+// Also clear when leaving game screen
+const originalShowScreen = showScreen;
+showScreen = function(id) {
+    if (id !== 'screen-game') {
+        clearInactivityTimer();
+        // If leaving game screen mid-game, save scores
+        if (document.getElementById('screen-game').classList.contains('active')) {
+            saveCurrentScores();
+            clearFinalTimer();
+            resetGame();
+        }
+    } else {
+        resetInactivityTimer();
+    }
+    originalShowScreen(id);
+};
 
 // ========== INIT ==========
 // Pre-fill name from localStorage if saved
