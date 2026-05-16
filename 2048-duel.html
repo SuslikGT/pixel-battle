@@ -1428,12 +1428,12 @@ body {
 
     <div class="player-select">
       <div class="player-card retro" id="card-retro" onclick="selectSide(1)">
-        <div class="card-header">▶ PLAYER 1 — LEFT</div>
+        <div class="card-header">▶ ИГРОК 1 - ЛЕВЫЙ</div>
         <div class="card-name-display" id="p1-name-display" style="font-family:'VT323',monospace; font-size:22px; color:var(--retro-gold); margin:8px 0; min-height:28px;">—</div>
-        <div class="card-style-label">✦ RETRO ARCADE ✦</div>
+        <div class="card-style-label">✦ ТРЯВЯННОЕ ДРЫСЛО ✦</div>
         <div class="card-keys">
-          MOVE: ARROW KEYS<br>
-          STYLE: OLD SCHOOL
+          УПРАВЛЕНИЕ: СТРЕЛКАМИ<br>
+          СТИЛЬ: СТАРОЙ ШКОЛЫ
         </div>
         <div class="select-hint select-hint-retro">👆 КЛИКНИ ЧТОБЫ ВЫБРАТЬ СТОРОНУ</div>
       </div>
@@ -1441,12 +1441,12 @@ body {
       <div class="vs-badge">VS</div>
 
       <div class="player-card cyber" id="card-cyber" onclick="selectSide(2)">
-        <div class="card-header">▷ PLAYER 2 — RIGHT</div>
-        <div class="card-name-display" id="p2-name-display" style="font-family:'Orbitron',sans-serif; font-size:22px; color:var(--cyber-neon); margin:8px 0; min-height:28px;">—</div>
-        <div class="card-style-label">◈ CYBERPUNK 2099 ◈</div>
+        <div class="card-header">▷ ИГРОК 2 - ПРАВЫЙ</div>
+        <div class="card-name-display" id="p2-name-display" style="font-family:'Orbitron',sans-serif; font-size:28px; color:var(--cyber-neon); margin:8px 0; min-height:28px;">—</div>
+        <div class="card-style-label">◈ ПИВНОЕ ПУЗО ◈</div>
         <div class="card-keys">
-          MOVE: ARROW KEYS<br>
-          STYLE: NEON FUTURE
+          УПРАВЛЕНИЕ: СТРЕЛКАМИ<br>
+          СТИЛЬ: НОВОЙ ШКОЛЫ
         </div>
         <div class="select-hint select-hint-cyber">👆 КЛИКНИ ЧТОБЫ ВЫБРАТЬ СТОРОНУ</div>
       </div>
@@ -2235,7 +2235,7 @@ function showGameOver(p) {
   showToast(`${playerNames[p]}: GAME OVER! Score: ${state[p].score.toLocaleString()}`);
 
   // Start 30s timer
-  finalCountdown = 30;
+  finalCountdown = 8;
   const overlay = document.createElement('div');
   overlay.id = 'final-timer-overlay';
   overlay.className = 'final-timer-overlay';
