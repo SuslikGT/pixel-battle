@@ -369,6 +369,128 @@
             margin-bottom: 5px;
         }
 
+        
+        .auth-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .auth-center {
+            flex: 1;
+            text-align: center;
+            min-width: 200px;
+        }
+        .btn-duel {
+            background: linear-gradient(135deg, rgba(255,60,172,0.15), rgba(0,240,255,0.15));
+            border: 1px solid var(--accent2);
+            color: var(--accent2);
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
+            text-shadow: 0 0 8px rgba(255,60,172,0.3);
+            white-space: nowrap;
+        }
+        .btn-duel:hover {
+            background: linear-gradient(135deg, rgba(255,60,172,0.25), rgba(0,240,255,0.25));
+            box-shadow: 0 0 20px rgba(255,60,172,0.3);
+            border-color: var(--accent);
+            color: #fff;
+        }
+        .right-panel {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin: 0 auto;
+        }
+        .preview-fixed {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+        .lobby-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-height: 140px;
+            overflow-y: auto;
+            padding: 4px;
+        }
+        .lobby-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            transition: all 0.15s;
+        }
+        .lobby-item:hover {
+            border-color: var(--accent);
+        }
+        .lobby-item-name {
+            color: var(--text);
+            cursor: pointer;
+        }
+        .lobby-item-name:hover {
+            color: var(--accent);
+        }
+        .lobby-delete {
+            background: none;
+            border: none;
+            color: #ff4455;
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 0 2px;
+            line-height: 1;
+            opacity: 0.6;
+            transition: opacity 0.15s;
+        }
+        .lobby-delete:hover {
+            opacity: 1;
+        }
+        .lobby-empty {
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            text-align: center;
+            width: 100%;
+            padding: 12px;
+        }
+        .mute-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.75rem;
+            padding: 0 2px;
+            margin-left: 4px;
+            opacity: 0.4;
+            transition: opacity 0.15s;
+        }
+        .mute-btn:hover {
+            opacity: 1;
+        }
+        @media (min-width: 1300px) {
+            .right-panel {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                width: 300px;
+                margin: 0;
+                z-index: 100;
+            }
+            .right-panel .chat-panel {
+                height: calc(100vh - 220px);
+            }
+        }
+
         .footer-hint {
             font-size: 0.62rem;
             color: var(--text-dim);
@@ -566,15 +688,20 @@
 
     <!-- Auth -->
     <div class="auth-panel" id="authPanel">
-        <div id="loginSection">
-            <button onclick="signInWithGoogle()">🔑 Войти через Google</button>
-            <p style="font-size:0.7rem; color:var(--text-dim); margin-top:8px;">Вход обязателен для рисования</p>
-        </div>
-        <div class="user-info" id="userSection">
-            <img id="userAvatar" src="" alt="">
-            <span id="userName"></span>
-            <span class="badge" id="adminBadge" style="display:none;">ADMIN</span>
-            <button onclick="signOut()">Выйти</button>
+        <div class="auth-row">
+            <button class="btn btn-duel" onclick="goToDuel()">⚔ 2048 DUEL</button>
+            <div class="auth-center">
+                <div id="loginSection">
+                    <button onclick="signInWithGoogle()">🔑 Войти через Google</button>
+                    <p style="font-size:0.7rem; color:var(--text-dim); margin-top:8px;">Вход обязателен для рисования</p>
+                </div>
+                <div class="user-info" id="userSection">
+                    <img id="userAvatar" src="" alt="">
+                    <span id="userName"></span>
+                    <span class="badge" id="adminBadge" style="display:none;">ADMIN</span>
+                    <button onclick="signOut()">Выйти</button>
+                </div>
+            </div>
         </div>
         <div class="cooldown-bar" id="cooldownBar">
             <div class="cooldown-fill" id="cooldownFill"></div>
@@ -596,6 +723,14 @@
         </div>
         <div style="text-align:center; margin-top:8px; font-size:0.7rem; color:var(--text-dim);">
             Текущее лобби: <span id="currentLobby" style="color:var(--accent);">main</span>
+        </div>
+    </div>
+
+    <!-- Lobby List -->
+    <div class="panel">
+        <div class="panel-label">📋 Активные лобби</div>
+        <div class="lobby-list" id="lobbyList">
+            <div class="lobby-empty">Загрузка...</div>
         </div>
     </div>
 
@@ -662,27 +797,28 @@
         </div>
     </div>
 
-    <!-- Main layout: Canvas + Chat -->
+    <!-- Right Panel: Preview + Chat (fixed on desktop) -->
+    <div class="right-panel" id="rightPanel">
+        <div class="preview-fixed">
+            <div class="preview-label">ПРЕВЬЮ</div>
+            <canvas id="previewCanvas" class="preview-canvas" width="120" height="120"></canvas>
+        </div>
+        <div class="chat-panel">
+            <div class="panel-label" style="margin:0; padding:10px 12px; border-bottom:1px solid var(--border);">💬 Чат</div>
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input-row">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Сообщение..." maxlength="100" onkeypress="if(event.key==='Enter')sendChat()">
+                <button class="chat-send" onclick="sendChat()">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main layout: Canvas -->
     <div class="main-layout">
         <div class="canvas-area">
             <div class="preview-label" style="text-align:center; margin-bottom:6px; font-size:0.6rem; color:var(--text-dim); letter-spacing:0.2em;">АРЕНА</div>
             <div class="canvas-wrap">
                 <canvas id="canvas"></canvas>
-            </div>
-        </div>
-        <div class="side-panel">
-            <div>
-                <div class="preview-label">ПРЕВЬЮ</div>
-                <canvas id="previewCanvas" class="preview-canvas" width="120" height="120"></canvas>
-            </div>
-            <!-- Chat -->
-            <div class="chat-panel">
-                <div class="panel-label" style="margin:0; padding:10px 12px; border-bottom:1px solid var(--border);">💬 Чат</div>
-                <div class="chat-messages" id="chatMessages"></div>
-                <div class="chat-input-row">
-                    <input type="text" class="chat-input" id="chatInput" placeholder="Сообщение..." maxlength="100" onkeypress="if(event.key==='Enter')sendChat()">
-                    <button class="chat-send" onclick="sendChat()">➤</button>
-                </div>
             </div>
         </div>
     </div>
@@ -806,6 +942,9 @@ let cooldownTimer = null;
 let currentLobby = 'main';
 let chatUnsubscribe = null;
 let pixelsUnsubscribe = null;
+let mutedUsers = new Set();
+let mutesUnsubscribe = null;
+let lobbyListUnsubscribe = null;
 
 // ─── Canvas setup ─────────────────────────────────────────────────────────────
 const canvas = document.getElementById('canvas');
@@ -845,6 +984,7 @@ function showAlert(msg) {
 function checkAdmin() {
     isAdmin = currentUser && ADMIN_UIDS.includes(currentUser.uid);
     updateUIForRole();
+    loadLobbyList();
 }
 
 function updateUIForRole() {
@@ -1332,6 +1472,56 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+function goToDuel() {
+    window.open('2048-duel.html', '_blank');
+}
+
+function loadLobbyList() {
+    if (lobbyListUnsubscribe) lobbyListUnsubscribe();
+    lobbyListUnsubscribe = db.collection('lobbies').onSnapshot(snapshot => {
+        const list = document.getElementById('lobbyList');
+        if (!snapshot.size) {
+            list.innerHTML = '<div class="lobby-empty">Нет активных лобби</div>';
+            return;
+        }
+        list.innerHTML = '';
+        snapshot.forEach(doc => {
+            const name = doc.id;
+            const item = document.createElement('div');
+            item.className = 'lobby-item';
+            let html = `<span class="lobby-item-name" onclick="joinLobby('${name}')">${escapeHtml(name)}</span>`;
+            if (isAdmin) {
+                html += `<button class="lobby-delete" onclick="deleteLobby('${name}')" title="Удалить">✕</button>`;
+            }
+            item.innerHTML = html;
+            list.appendChild(item);
+        });
+    });
+}
+
+function deleteLobby(name) {
+    if (!isAdmin) return;
+    if (!confirm(`Удалить лобби "${name}"? Все пиксели и чат будут удалены.`)) return;
+    db.collection('lobbies').doc(name).delete().catch(err => {
+        showAlert('Ошибка удаления: ' + err.message);
+    });
+}
+
+function muteUser(userId, userName) {
+    if (!isAdmin || !currentUser) return;
+    db.collection('lobbies').doc(currentLobby).collection('mutes').doc(userId).set({
+        userId: userId,
+        userName: userName || 'Unknown',
+        mutedBy: currentUser.uid,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+}
+
+function unmuteUser(userId) {
+    if (!isAdmin) return;
+    db.collection('lobbies').doc(currentLobby).collection('mutes').doc(userId).delete();
+}
+
 // ─── Firestore: Save & Load with Lobbies ───────────────────────────────────────
 function savePixel(x, y) {
     if (!currentUser) return;
@@ -1377,6 +1567,7 @@ function loadLobbyPixels() {
 // ─── Init ─────────────────────────────────────────────────────────────────────
 buildPalette();
 resizeCanvas();
+loadLobbyList();
 </script>
 </body>
 </html>SuslikGT
