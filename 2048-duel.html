@@ -1,0 +1,1837 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2048 DUEL — Retro vs Cyberpunk</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<style>
+:root {
+  --retro-bg: #1a0a00;
+  --retro-panel: #2d1400;
+  --retro-gold: #ffb800;
+  --retro-amber: #ff8c00;
+  --retro-green: #39ff14;
+  --retro-red: #ff2200;
+  --retro-border: #c8860a;
+  --retro-text: #ffe599;
+  --retro-shadow: #ff8c00;
+
+  --cyber-bg: #000814;
+  --cyber-panel: #001228;
+  --cyber-neon: #00f5ff;
+  --cyber-pink: #ff006e;
+  --cyber-purple: #7b00ff;
+  --cyber-yellow: #f0ff00;
+  --cyber-text: #b0fff8;
+  --cyber-border: #00f5ff;
+  --cyber-shadow: #00f5ff;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  min-height: 100vh;
+  font-family: 'Share Tech Mono', monospace;
+  overflow-x: hidden;
+  background: #000;
+}
+
+/* ========== SCREENS ========== */
+.screen { display: none; width: 100%; min-height: 100vh; }
+.screen.active { display: flex; }
+
+/* ========== MAIN MENU ========== */
+#screen-menu {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #050510;
+  position: relative;
+  overflow: hidden;
+}
+
+.menu-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(255,140,0,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 50%, rgba(0,245,255,0.12) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.menu-divider-line {
+  position: absolute;
+  left: 50%; top: 0; bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, transparent, #888, #fff, #888, transparent);
+  opacity: 0.3;
+}
+
+.menu-bg-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,184,0,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,245,255,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+.menu-content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 36px;
+  padding: 40px 20px;
+  max-width: 900px;
+  width: 100%;
+}
+
+.menu-title {
+  text-align: center;
+}
+
+.title-duel {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(14px, 4vw, 52px);
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  background: linear-gradient(90deg, #ffb800 0%, #ff8c00 30%, #fff 50%, #00f5ff 70%, #7b00ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 20px rgba(255,140,0,0.5));
+  line-height: 1.1;
+}
+
+.title-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: clamp(10px, 2vw, 18px);
+  color: #888;
+  letter-spacing: 0.3em;
+  margin-top: 8px;
+}
+
+.player-select {
+  display: flex;
+  gap: 24px;
+  width: 100%;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.player-card {
+  flex: 1;
+  min-width: 280px;
+  max-width: 360px;
+  border-radius: 4px;
+  padding: 24px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.player-card:hover { transform: translateY(-4px); }
+
+.player-card.retro {
+  background: var(--retro-panel);
+  border: 2px solid var(--retro-border);
+  box-shadow: 0 0 20px rgba(255,140,0,0.2), inset 0 0 40px rgba(255,140,0,0.03);
+}
+
+.player-card.cyber {
+  background: var(--cyber-panel);
+  border: 2px solid var(--cyber-border);
+  box-shadow: 0 0 20px rgba(0,245,255,0.2), inset 0 0 40px rgba(0,245,255,0.03);
+}
+
+.card-header {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+}
+
+.player-card.retro .card-header { color: var(--retro-gold); }
+.player-card.cyber .card-header { color: var(--cyber-neon); }
+
+.card-name-input {
+  width: 100%;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid;
+  border-radius: 2px;
+  padding: 10px 14px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 16px;
+  outline: none;
+  margin-bottom: 16px;
+}
+
+.player-card.retro .card-name-input {
+  border-color: var(--retro-border);
+  color: var(--retro-text);
+}
+
+.player-card.cyber .card-name-input {
+  border-color: var(--cyber-border);
+  color: var(--cyber-text);
+}
+
+.card-style-label {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  opacity: 0.6;
+}
+
+.player-card.retro .card-style-label { color: var(--retro-amber); font-family: 'VT323', monospace; font-size: 18px; }
+.player-card.cyber .card-style-label { color: var(--cyber-neon); font-family: 'Orbitron', sans-serif; }
+
+.card-keys {
+  margin-top: 14px;
+  font-size: 11px;
+  opacity: 0.5;
+  line-height: 1.8;
+}
+
+.player-card.retro .card-keys { color: var(--retro-text); font-family: 'VT323', monospace; font-size: 16px; }
+.player-card.cyber .card-keys { color: var(--cyber-text); }
+
+.vs-badge {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 22px;
+  color: #fff;
+  text-shadow: 0 0 20px #fff;
+  align-self: center;
+  animation: vsPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes vsPulse {
+  0%, 100% { text-shadow: 0 0 20px rgba(255,255,255,0.5); transform: scale(1); }
+  50% { text-shadow: 0 0 40px #fff, 0 0 60px rgba(255,184,0,0.5); transform: scale(1.1); }
+}
+
+.menu-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.btn-play {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(12px, 2.5vw, 20px);
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  padding: 18px 60px;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+  background: linear-gradient(135deg, #ffb800, #ff8c00 40%, #ff006e 70%, #00f5ff);
+  color: #000;
+  text-transform: uppercase;
+  transition: filter 0.2s, transform 0.2s;
+}
+
+.btn-play:hover {
+  filter: brightness(1.2);
+  transform: scale(1.04);
+}
+
+.btn-play:active { transform: scale(0.97); }
+
+.menu-hint {
+  font-size: 11px;
+  color: #444;
+  letter-spacing: 0.2em;
+}
+
+/* ========== GAME SCREEN ========== */
+#screen-game {
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+.game-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* LEFT SIDE — RETRO */
+.side-retro {
+  flex: 1;
+  background: var(--retro-bg);
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,140,0,0.04) 39px, rgba(255,140,0,0.04) 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,140,0,0.04) 39px, rgba(255,140,0,0.04) 40px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 16px;
+  border-right: 3px solid #6b4a00;
+  position: relative;
+  overflow: hidden;
+}
+
+.side-retro::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, transparent, var(--retro-gold), var(--retro-amber), var(--retro-gold), transparent);
+}
+
+/* RIGHT SIDE — CYBERPUNK */
+.side-cyber {
+  flex: 1;
+  background: var(--cyber-bg);
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(0,245,255,0.03) 39px, rgba(0,245,255,0.03) 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,245,255,0.03) 39px, rgba(0,245,255,0.03) 40px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 16px;
+  border-left: 3px solid #003344;
+  position: relative;
+  overflow: hidden;
+}
+
+.side-cyber::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, transparent, var(--cyber-neon), var(--cyber-purple), var(--cyber-pink), transparent);
+  animation: scanline 3s linear infinite;
+}
+
+@keyframes scanline {
+  0% { opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+/* PLAYER HEADERS */
+.player-header {
+  width: 100%;
+  max-width: 380px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.player-name {
+  font-size: clamp(10px, 2.5vw, 20px);
+  letter-spacing: 0.1em;
+  text-align: center;
+}
+
+.side-retro .player-name {
+  font-family: 'Press Start 2P', monospace;
+  color: var(--retro-gold);
+  text-shadow: 0 0 8px var(--retro-gold);
+}
+
+.side-cyber .player-name {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  color: var(--cyber-neon);
+  text-shadow: 0 0 12px var(--cyber-neon);
+}
+
+.score-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.score-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 16px;
+  border: 1px solid;
+  min-width: 80px;
+}
+
+.side-retro .score-box {
+  border-color: var(--retro-border);
+  background: rgba(255,140,0,0.05);
+  font-family: 'VT323', monospace;
+}
+
+.side-cyber .score-box {
+  border-color: rgba(0,245,255,0.3);
+  background: rgba(0,245,255,0.04);
+  font-family: 'Share Tech Mono', monospace;
+  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+}
+
+.score-label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  opacity: 0.6;
+  font-family: inherit;
+}
+
+.side-retro .score-label { color: var(--retro-amber); }
+.side-cyber .score-label { color: var(--cyber-neon); }
+
+.score-value {
+  font-size: clamp(18px, 3vw, 28px);
+  font-weight: bold;
+}
+
+.side-retro .score-value { color: var(--retro-gold); font-family: 'VT323', monospace; }
+.side-cyber .score-value { color: #fff; font-family: 'Orbitron', sans-serif; }
+
+.active-badge {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  padding: 3px 10px;
+  animation: activePulse 0.8s ease-in-out infinite;
+}
+
+.side-retro .active-badge {
+  color: var(--retro-green);
+  border: 1px solid var(--retro-green);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  background: rgba(57,255,20,0.05);
+}
+
+.side-cyber .active-badge {
+  color: var(--cyber-pink);
+  border: 1px solid var(--cyber-pink);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 8px;
+  background: rgba(255,0,110,0.05);
+  clip-path: polygon(4px 0%, 100% 0%, calc(100% - 4px) 100%, 0% 100%);
+}
+
+@keyframes activePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* GAME BOARD */
+.board-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+}
+
+.game-board {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  padding: 8px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 8px;
+  position: relative;
+}
+
+.side-retro .game-board {
+  background: var(--retro-panel);
+  border: 2px solid var(--retro-border);
+  box-shadow: 0 0 30px rgba(255,140,0,0.15), inset 0 0 60px rgba(255,140,0,0.02);
+}
+
+.side-cyber .game-board {
+  background: var(--cyber-panel);
+  border: 2px solid rgba(0,245,255,0.4);
+  box-shadow: 0 0 30px rgba(0,245,255,0.1), inset 0 0 60px rgba(0,245,255,0.02);
+}
+
+.cell {
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  position: relative;
+  transition: all 0.1s ease;
+  aspect-ratio: 1;
+}
+
+.side-retro .cell { font-family: 'Press Start 2P', monospace; }
+.side-cyber .cell { font-family: 'Orbitron', sans-serif; }
+
+/* RETRO TILE COLORS */
+.side-retro .cell-0 { background: rgba(255,140,0,0.06); }
+.side-retro .cell-2 { background: #3d1800; color: #ffcc80; font-size: clamp(10px, 2vw, 18px); border: 1px solid #6b3300; }
+.side-retro .cell-4 { background: #4d2000; color: #ffb74d; font-size: clamp(10px, 2vw, 18px); border: 1px solid #8b4500; }
+.side-retro .cell-8 { background: #8b3000; color: #ffe0b2; font-size: clamp(10px, 2vw, 18px); box-shadow: 0 0 8px rgba(255,120,0,0.4); }
+.side-retro .cell-16 { background: #9e3500; color: #fff3e0; font-size: clamp(8px, 1.8vw, 16px); box-shadow: 0 0 10px rgba(255,100,0,0.5); }
+.side-retro .cell-32 { background: #b33a00; color: #ffe0b2; font-size: clamp(8px, 1.8vw, 16px); box-shadow: 0 0 12px rgba(255,80,0,0.6); }
+.side-retro .cell-64 { background: #cc4400; color: #fff; font-size: clamp(8px, 1.8vw, 16px); box-shadow: 0 0 15px rgba(255,70,0,0.7); }
+.side-retro .cell-128 { background: #dd5500; color: #fff; font-size: clamp(7px, 1.5vw, 13px); box-shadow: 0 0 18px rgba(255,80,0,0.8); }
+.side-retro .cell-256 { background: #ee6600; color: #fff; font-size: clamp(7px, 1.5vw, 13px); box-shadow: 0 0 20px var(--retro-amber); }
+.side-retro .cell-512 { background: #ff7700; color: #fff; font-size: clamp(6px, 1.3vw, 12px); box-shadow: 0 0 25px var(--retro-amber); }
+.side-retro .cell-1024 { background: #ffaa00; color: #1a0a00; font-size: clamp(5px, 1.1vw, 10px); box-shadow: 0 0 30px var(--retro-gold); }
+.side-retro .cell-2048 { background: var(--retro-gold); color: #1a0a00; font-size: clamp(5px, 1.1vw, 10px); box-shadow: 0 0 40px var(--retro-gold), 0 0 80px rgba(255,184,0,0.5); animation: retroWin 0.5s ease infinite alternate; }
+
+@keyframes retroWin {
+  from { box-shadow: 0 0 30px var(--retro-gold); }
+  to { box-shadow: 0 0 60px var(--retro-gold), 0 0 100px rgba(255,184,0,0.8); }
+}
+
+/* CYBER TILE COLORS */
+.side-cyber .cell-0 { background: rgba(0,245,255,0.03); }
+.side-cyber .cell-2 { background: #001830; color: #4dd9e0; font-size: clamp(10px, 2vw, 18px); border: 1px solid #003050; }
+.side-cyber .cell-4 { background: #002040; color: #00f5ff; font-size: clamp(10px, 2vw, 18px); border: 1px solid #004060; }
+.side-cyber .cell-8 { background: #002850; color: #7fffff; font-size: clamp(10px, 2vw, 18px); box-shadow: 0 0 8px rgba(0,200,255,0.4); }
+.side-cyber .cell-16 { background: #1a0030; color: #c084fc; font-size: clamp(8px, 1.8vw, 16px); box-shadow: 0 0 10px rgba(123,0,255,0.5); }
+.side-cyber .cell-32 { background: #2d0050; color: #d8b4fe; font-size: clamp(8px, 1.8vw, 16px); box-shadow: 0 0 12px rgba(123,0,255,0.6); }
+.side-cyber .cell-64 { background: #3d0060; color: #e9d5ff; font-size: clamp(8px, 1.8vw, 16px); box-shadow: 0 0 15px rgba(123,0,255,0.7); }
+.side-cyber .cell-128 { background: #4a0050; color: #ff79c6; font-size: clamp(7px, 1.5vw, 13px); box-shadow: 0 0 18px rgba(255,0,110,0.6); }
+.side-cyber .cell-256 { background: #550040; color: #ff6eb4; font-size: clamp(7px, 1.5vw, 13px); box-shadow: 0 0 20px var(--cyber-pink); }
+.side-cyber .cell-512 { background: #660030; color: #ff006e; font-size: clamp(6px, 1.3vw, 12px); box-shadow: 0 0 25px var(--cyber-pink); }
+.side-cyber .cell-1024 { background: #1a1a00; color: #f0ff00; font-size: clamp(5px, 1.1vw, 10px); box-shadow: 0 0 30px var(--cyber-yellow); }
+.side-cyber .cell-2048 { background: var(--cyber-yellow); color: #000; font-size: clamp(5px, 1.1vw, 10px); box-shadow: 0 0 40px var(--cyber-yellow), 0 0 80px rgba(240,255,0,0.5); animation: cyberWin 0.3s ease infinite alternate; }
+
+@keyframes cyberWin {
+  from { box-shadow: 0 0 30px var(--cyber-yellow); filter: brightness(1); }
+  to { box-shadow: 0 0 60px var(--cyber-yellow), 0 0 100px rgba(240,255,0,0.8); filter: brightness(1.2); }
+}
+
+.cell.merged {
+  animation: mergePop 0.15s ease-out;
+}
+
+@keyframes mergePop {
+  0% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.cell.new-tile {
+  animation: newTile 0.15s ease-out;
+}
+
+@keyframes newTile {
+  0% { transform: scale(0.2); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* GAME OVER OVERLAY */
+.board-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 20;
+  border-radius: 4px;
+}
+
+.side-retro .board-overlay {
+  background: rgba(26, 10, 0, 0.88);
+  border: 2px solid var(--retro-gold);
+}
+
+.side-cyber .board-overlay {
+  background: rgba(0, 8, 20, 0.88);
+  border: 2px solid var(--cyber-neon);
+}
+
+.overlay-title {
+  letter-spacing: 0.1em;
+}
+
+.side-retro .overlay-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(10px, 2vw, 16px);
+  color: var(--retro-red);
+  text-shadow: 0 0 10px var(--retro-red);
+}
+
+.side-cyber .overlay-title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: clamp(10px, 2vw, 16px);
+  color: var(--cyber-pink);
+  text-shadow: 0 0 10px var(--cyber-pink);
+}
+
+.overlay-score {
+  font-size: 22px;
+}
+
+.side-retro .overlay-score { color: var(--retro-gold); font-family: 'VT323', monospace; font-size: 30px; }
+.side-cyber .overlay-score { color: var(--cyber-neon); font-family: 'Share Tech Mono', monospace; }
+
+.win-overlay .overlay-title {
+}
+
+.side-retro .win-overlay .overlay-title { color: var(--retro-gold) !important; }
+.side-cyber .win-overlay .overlay-title { color: var(--cyber-yellow) !important; text-shadow: 0 0 15px var(--cyber-yellow) !important; }
+
+/* CONTROLS */
+.side-controls {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.controls-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* RETRO BUTTONS */
+.btn-retro {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(6px, 1.2vw, 9px);
+  padding: 10px 14px;
+  background: var(--retro-panel);
+  border: 2px solid var(--retro-border);
+  color: var(--retro-gold);
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: background 0.15s, box-shadow 0.15s;
+  position: relative;
+}
+
+.btn-retro:hover {
+  background: rgba(255,140,0,0.12);
+  box-shadow: 0 0 12px rgba(255,140,0,0.4);
+}
+
+.btn-retro:active { transform: translateY(1px); }
+
+.btn-retro.primary {
+  border-color: var(--retro-gold);
+  background: rgba(255,184,0,0.08);
+}
+
+/* CYBER BUTTONS */
+.btn-cyber {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(7px, 1.2vw, 9px);
+  font-weight: 700;
+  padding: 10px 14px;
+  background: rgba(0,245,255,0.04);
+  border: 1px solid rgba(0,245,255,0.5);
+  color: var(--cyber-neon);
+  cursor: pointer;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.btn-cyber:hover {
+  background: rgba(0,245,255,0.1);
+  box-shadow: 0 0 15px rgba(0,245,255,0.4);
+}
+
+.btn-cyber:active { transform: translateY(1px); }
+
+.btn-cyber.primary {
+  border-color: var(--cyber-neon);
+  background: rgba(0,245,255,0.08);
+}
+
+/* ACTIVE PLAYER INDICATOR */
+.keys-info {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  opacity: 0.45;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.side-retro .keys-info { color: var(--retro-text); font-family: 'VT323', monospace; font-size: 16px; }
+.side-cyber .keys-info { color: var(--cyber-text); font-family: 'Share Tech Mono', monospace; }
+
+/* MIDDLE DIVIDER */
+.game-divider {
+  width: 4px;
+  background: linear-gradient(to bottom, #6b4a00, #886600, #fff 49%, #fff 51%, #003344, #004455);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.game-divider::after {
+  content: 'VS';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 14px;
+  color: #fff;
+  background: #111;
+  padding: 8px 4px;
+  text-shadow: 0 0 10px #fff;
+  writing-mode: vertical-rl;
+  letter-spacing: 4px;
+}
+
+/* ========== LEADERBOARD SCREEN ========== */
+#screen-leaderboard {
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 40px 20px;
+  background: #060612;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.02) 39px, rgba(255,255,255,0.02) 40px);
+  overflow-y: auto;
+}
+
+.lb-title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: clamp(18px, 4vw, 40px);
+  letter-spacing: 0.2em;
+  background: linear-gradient(90deg, var(--retro-gold), var(--cyber-neon));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+
+.lb-sub {
+  font-family: 'Share Tech Mono', monospace;
+  color: #444;
+  letter-spacing: 0.3em;
+  font-size: 12px;
+  margin-bottom: 36px;
+}
+
+.lb-table-wrap {
+  width: 100%;
+  max-width: 700px;
+  overflow-x: auto;
+}
+
+.lb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.lb-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  border-bottom: 1px solid #333;
+}
+
+.lb-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #1a1a1a;
+  font-size: 14px;
+}
+
+.lb-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+.lb-rank { color: #555; font-size: 11px; }
+.lb-rank.gold { color: #ffd700; }
+.lb-rank.silver { color: #c0c0c0; }
+.lb-rank.bronze { color: #cd7f32; }
+
+.lb-player-retro { color: var(--retro-gold); font-family: 'VT323', monospace; font-size: 20px; }
+.lb-player-cyber { color: var(--cyber-neon); font-family: 'Orbitron', sans-serif; font-size: 12px; }
+.lb-score { color: #fff; }
+.lb-best { color: #888; }
+.lb-date { color: #444; font-size: 11px; }
+.lb-style-retro { color: var(--retro-amber); font-size: 10px; font-family: 'VT323', monospace; font-size: 16px; }
+.lb-style-cyber { color: var(--cyber-neon); font-size: 10px; font-family: 'Orbitron', sans-serif; font-size: 9px; }
+
+.lb-empty {
+  text-align: center;
+  color: #333;
+  padding: 60px;
+  font-size: 16px;
+  letter-spacing: 0.2em;
+}
+
+.lb-controls {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn-generic {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 12px 24px;
+  background: transparent;
+  border: 1px solid #333;
+  color: #888;
+  cursor: pointer;
+  letter-spacing: 0.15em;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+
+.btn-generic:hover { border-color: #666; color: #ccc; }
+
+.btn-clear {
+  border-color: #440000;
+  color: #660000;
+}
+
+.btn-clear:hover { border-color: var(--retro-red); color: var(--retro-red); }
+
+/* TOP BAR */
+.top-bar {
+  width: 100%;
+  background: #000;
+  border-bottom: 1px solid #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  flex-shrink: 0;
+  z-index: 50;
+}
+
+.top-bar-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  background: linear-gradient(90deg, var(--retro-gold), var(--cyber-neon));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.top-bar-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-topbar {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid #2a2a2a;
+  color: #666;
+  cursor: pointer;
+  letter-spacing: 0.1em;
+  transition: all 0.15s;
+  text-transform: uppercase;
+}
+
+.btn-topbar:hover { border-color: #555; color: #aaa; }
+
+/* TOAST NOTIFICATION */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #111;
+  border: 1px solid #333;
+  color: #ccc;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  padding: 12px 24px;
+  letter-spacing: 0.1em;
+  z-index: 1000;
+  transition: transform 0.3s ease;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* SWITCH KEYS HINT */
+.switch-hint {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  opacity: 0.35;
+  margin-top: 4px;
+}
+
+.side-retro .switch-hint { color: var(--retro-text); font-family: 'VT323', monospace; font-size: 14px; }
+.side-cyber .switch-hint { color: var(--cyber-text); font-family: 'Share Tech Mono', monospace; }
+
+/* SCANLINES EFFECT */
+.side-cyber::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.side-cyber > * { position: relative; z-index: 2; }
+
+/* RETRO CRT corners */
+.side-retro::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.4) 100%);
+  pointer-events: none;
+}
+
+.side-retro > * { position: relative; z-index: 2; }
+
+/* Progress bar (target to 2048) */
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.side-retro .progress-bar { border: 1px solid var(--retro-border); }
+.side-cyber .progress-bar { border: 1px solid rgba(0,245,255,0.2); }
+
+.progress-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+  border-radius: 3px;
+}
+
+.side-retro .progress-fill { background: linear-gradient(90deg, #ff4400, var(--retro-gold)); }
+.side-cyber .progress-fill { background: linear-gradient(90deg, var(--cyber-purple), var(--cyber-neon)); }
+
+.progress-label {
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  opacity: 0.4;
+}
+
+.side-retro .progress-label { color: var(--retro-text); font-family: 'VT323', monospace; font-size: 14px; }
+.side-cyber .progress-label { color: var(--cyber-text); }
+
+/* Modal for confirm */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay.active { display: flex; }
+
+.modal-box {
+  background: #0a0a0a;
+  border: 1px solid #333;
+  padding: 32px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+}
+
+.modal-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+}
+
+.modal-body {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  color: #666;
+  letter-spacing: 0.1em;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.modal-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+
+/* ADMIN ONLY */
+.admin-only { display: none !important; }
+
+/* FINAL TIMER */
+.final-timer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+.final-timer-box {
+    text-align: center;
+    border: 2px solid var(--cyber-neon);
+    background: rgba(0,8,20,0.95);
+    padding: 40px 60px;
+    border-radius: 8px;
+    box-shadow: 0 0 60px rgba(0,245,255,0.2);
+}
+.final-timer-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 24px;
+    color: #fff;
+    letter-spacing: 0.2em;
+    margin-bottom: 20px;
+}
+.final-timer-count {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 72px;
+    font-weight: 900;
+    color: var(--cyber-neon);
+    text-shadow: 0 0 30px var(--cyber-neon);
+    line-height: 1;
+}
+.final-timer-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    color: #888;
+    letter-spacing: 0.2em;
+    margin-top: 10px;
+}
+
+/* RESULTS MODAL */
+.results-modal .result-vs {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    margin: 24px 0;
+    align-items: center;
+}
+.results-modal .result-player {
+    text-align: center;
+    min-width: 140px;
+}
+.results-modal .result-name-retro {
+    color: var(--retro-gold);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    margin-bottom: 12px;
+}
+.results-modal .result-name-cyber {
+    color: var(--cyber-neon);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    margin-bottom: 12px;
+}
+.results-modal .result-score {
+    color: #fff;
+    font-size: 32px;
+    font-weight: bold;
+    margin: 8px 0;
+}
+.results-modal .result-max {
+    color: #888;
+    font-size: 12px;
+}
+.results-modal .result-winner {
+    color: var(--cyber-neon);
+    font-size: 20px;
+    text-align: center;
+    margin-top: 16px;
+    letter-spacing: 0.1em;
+}
+
+/* Responsive */
+/* Responsive */
+@media (max-width: 700px) {
+  .game-layout { flex-direction: column; }
+  .game-divider { width: 100%; height: 4px; }
+  .game-divider::after { writing-mode: horizontal-tb; letter-spacing: 4px; padding: 4px 8px; }
+  .player-card { min-width: 240px; }
+  .vs-badge { font-size: 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ MAIN MENU ============ -->
+<div id="screen-menu" class="screen active">
+  <div class="menu-bg"></div>
+  <div class="menu-bg-grid"></div>
+  <div class="menu-divider-line"></div>
+
+  <div class="menu-content">
+    <div class="menu-title">
+      <div class="title-duel">2048 DUEL</div>
+      <div class="title-sub">RETRO vs CYBERPUNK · TWO PLAYERS</div>
+    </div>
+
+    <div class="player-select">
+      <div class="player-card retro">
+        <div class="card-header">▶ PLAYER 1 — LEFT</div>
+        <input class="card-name-input" id="p1-name" type="text" placeholder="ENTER NAME..." maxlength="14" value="PLAYER 1">
+        <div class="card-style-label">✦ RETRO ARCADE ✦</div>
+        <div class="card-keys">
+          SWITCH: KEY [1]<br>
+          MOVE: ARROW KEYS<br>
+          STYLE: OLD SCHOOL
+        </div>
+      </div>
+
+      <div class="vs-badge">VS</div>
+
+      <div class="player-card cyber">
+        <div class="card-header">▷ PLAYER 2 — RIGHT</div>
+        <input class="card-name-input" id="p2-name" type="text" placeholder="ENTER NAME..." maxlength="14" value="PLAYER 2">
+        <div class="card-style-label">◈ CYBERPUNK 2099 ◈</div>
+        <div class="card-keys">
+          SWITCH: KEY [2]<br>
+          MOVE: ARROW KEYS<br>
+          STYLE: NEON FUTURE
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-controls">
+      <button class="btn-play" onclick="startGame()">▶ PLAY NOW ◀</button>
+      <button class="btn-generic" onclick="showLeaderboard()" style="font-size:11px; padding:10px 24px; border-color:#2a2a2a; color:#555;">
+        ◈ LEADERBOARD ◈
+      </button>
+      <div class="menu-hint">PRESS [1] OR [2] DURING GAME TO SWITCH CONTROL</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ GAME SCREEN ============ -->
+<div id="screen-game" class="screen">
+  <div class="top-bar">
+    <div class="top-bar-title">2048 DUEL</div>
+    <div class="top-bar-btns">
+      <button class="btn-topbar" onclick="goToPixel()">🎨 PIXEL BATTLE</button>
+      <button class="btn-topbar admin-only" onclick="confirmAction('Restart both boards?', resetGame)">↺ RESTART</button>
+      <button class="btn-topbar" onclick="showLeaderboard()">◈ SCORES</button>
+      <button class="btn-topbar" onclick="goToMenu()">⌂ MENU</button>
+    </div>
+  </div>
+
+  <div class="game-layout">
+    <!-- LEFT: RETRO -->
+    <div class="side-retro" id="side-left">
+      <div class="player-header">
+        <div class="player-name" id="p1-display">PLAYER 1</div>
+        <div class="score-row">
+          <div class="score-box">
+            <div class="score-label">SCORE</div>
+            <div class="score-value" id="p1-score">0</div>
+          </div>
+          <div class="score-box">
+            <div class="score-label">BEST</div>
+            <div class="score-value" id="p1-best">0</div>
+          </div>
+          <div class="score-box">
+            <div class="score-label">MAX</div>
+            <div class="score-value" id="p1-max">0</div>
+          </div>
+          <div class="active-badge" id="p1-active">ACTIVE</div>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="p1-progress" style="width:0%"></div>
+        </div>
+        <div class="progress-label" id="p1-progress-label">TO 2048: 0%</div>
+      </div>
+
+      <div class="board-wrapper">
+        <div class="game-board" id="board-1"></div>
+        <div class="board-overlay" id="overlay-1" style="display:none">
+          <div class="overlay-title" id="overlay-1-title">GAME OVER</div>
+          <div class="overlay-score" id="overlay-1-score"></div>
+          <button class="btn-retro primary admin-only" onclick="resetSingleBoard(1)">▶ RETRY</button>
+          <button class="btn-retro admin-only" onclick="resetGame()">↺ FULL RESET</button>
+        </div>
+      </div>
+
+      <div class="side-controls">
+        <div class="controls-row">
+          <button class="btn-retro primary admin-only" onclick="resetSingleBoard(1)">↺ RETRY</button>
+          <button class="btn-retro admin-only" onclick="undoMove(1)">◄ UNDO</button>
+          <button class="btn-retro" onclick="setActive(1)">[ 1 ] SELECT</button>
+        </div>
+        <div class="keys-info">PRESS [1] TO ACTIVATE · ARROWS TO MOVE</div>
+        <div class="switch-hint">GAME CONTINUES EVEN WHEN INACTIVE</div>
+      </div>
+    </div>
+
+    <div class="game-divider"></div>
+
+    <!-- RIGHT: CYBERPUNK -->
+    <div class="side-cyber" id="side-right">
+      <div class="player-header">
+        <div class="player-name" id="p2-display">PLAYER 2</div>
+        <div class="score-row">
+          <div class="score-box">
+            <div class="score-label">SCORE</div>
+            <div class="score-value" id="p2-score">0</div>
+          </div>
+          <div class="score-box">
+            <div class="score-label">BEST</div>
+            <div class="score-value" id="p2-best">0</div>
+          </div>
+          <div class="score-box">
+            <div class="score-label">MAX</div>
+            <div class="score-value" id="p2-max">0</div>
+          </div>
+          <div class="active-badge" id="p2-active" style="opacity:0.2; animation:none;">ACTIVE</div>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="p2-progress" style="width:0%"></div>
+        </div>
+        <div class="progress-label" id="p2-progress-label">TO 2048: 0%</div>
+      </div>
+
+      <div class="board-wrapper">
+        <div class="game-board" id="board-2"></div>
+        <div class="board-overlay" id="overlay-2" style="display:none">
+          <div class="overlay-title" id="overlay-2-title">GAME OVER</div>
+          <div class="overlay-score" id="overlay-2-score"></div>
+          <button class="btn-cyber primary admin-only" onclick="resetSingleBoard(2)">▷ RETRY</button>
+          <button class="btn-cyber admin-only" onclick="resetGame()">↺ FULL RESET</button>
+        </div>
+      </div>
+
+      <div class="side-controls">
+        <div class="controls-row">
+          <button class="btn-cyber primary admin-only" onclick="resetSingleBoard(2)">↺ RETRY</button>
+          <button class="btn-cyber admin-only" onclick="undoMove(2)">◄ UNDO</button>
+          <button class="btn-cyber" onclick="setActive(2)">[2] SELECT</button>
+        </div>
+        <div class="keys-info">PRESS [2] TO ACTIVATE · ARROWS TO MOVE</div>
+        <div class="switch-hint">GAME CONTINUES EVEN WHEN INACTIVE</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ LEADERBOARD SCREEN ============ -->
+<div id="screen-leaderboard" class="screen" style="flex-direction:column;">
+  <div class="top-bar">
+    <div class="top-bar-title">◈ LEADERBOARD ◈</div>
+    <div class="top-bar-btns">
+      <button class="btn-topbar" id="lb-back-btn" onclick="leaderboardBack()">◄ BACK</button>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; align-items:center; padding:40px 20px; flex:1;">
+    <div class="lb-title">HALL OF FAME</div>
+    <div class="lb-sub">TOP SCORES · ALL TIME</div>
+
+    <div class="lb-table-wrap">
+      <table class="lb-table" id="lb-table">
+        <thead>
+          <tr>
+            <th style="color:#444; width:40px">#</th>
+            <th style="color:#666;">PLAYER</th>
+            <th style="color:#666;">STYLE</th>
+            <th style="color:#666;">SCORE</th>
+            <th style="color:#666;">BEST TILE</th>
+            <th style="color:#666;">DATE</th>
+          </tr>
+        </thead>
+        <tbody id="lb-body"></tbody>
+      </table>
+    </div>
+
+    <div class="lb-controls">
+      <button class="btn-generic btn-clear" onclick="confirmAction('Clear all records?', clearLeaderboard)">✕ CLEAR ALL</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL ============ -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">CONFIRM</div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-btns">
+      <button class="btn-generic" id="modal-confirm" style="border-color:#00f5ff; color:#00f5ff;">CONFIRM</button>
+      <button class="btn-generic" onclick="closeModal()">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== STATE ==========
+const SIZE = 4;
+let activePlayer = 1;
+let leaderboardFrom = 'menu';
+
+const state = {
+  1: { grid: [], score: 0, best: 0, over: false, won: false, history: [] },
+  2: { grid: [], score: 0, best: 0, over: false, won: false, history: [] }
+};
+
+const playerNames = { 1: 'PLAYER 1', 2: 'PLAYER 2' };
+
+// Firebase Admin
+const firebaseConfig = {
+    apiKey: "AIzaSyCalUZI_JXpTs7mm3d8NgqjgA6-R3U3nos",
+    authDomain: "pixel-battle-v2.firebaseapp.com",
+    projectId: "pixel-battle-v2",
+    storageBucket: "pixel-battle-v2.firebasestorage.app",
+    messagingSenderId: "131375871960",
+    appId: "1:131375871960:web:ddeb770cc7e95d5b38a4ad"
+};
+firebase.initializeApp(firebaseConfig);
+const auth2048 = firebase.auth();
+const ADMIN_UIDS_2048 = ["Y0dVRADqUbbsv4Tj0tkOHuEBinF3"];
+
+let currentUser2048 = null;
+let isAdmin2048 = false;
+
+auth2048.onAuthStateChanged(user => {
+    currentUser2048 = user;
+    isAdmin2048 = user && ADMIN_UIDS_2048.includes(user.uid);
+    updateAdminUI();
+    if (user) console.log('2048 DUEL UID:', user.uid);
+});
+
+function updateAdminUI() {
+    document.querySelectorAll('.admin-only').forEach(el => {
+        el.style.display = isAdmin2048 ? '' : 'none';
+    });
+}
+
+function goToPixel() {
+    window.location.href = 'index.html';
+}
+
+// Final timer
+let finalTimer = null;
+let finalCountdown = 30;
+let gameEnded = false;
+let resultsSaved = false;
+
+function clearFinalTimer() {
+    if (finalTimer) {
+        clearInterval(finalTimer);
+        finalTimer = null;
+    }
+    const el = document.getElementById('final-timer-overlay');
+    if (el) el.remove();
+    gameEnded = false;
+    resultsSaved = false;
+}
+
+function showFinalResults() {
+    if (resultsSaved) return;
+    resultsSaved = true;
+
+    const max1 = getMaxTile(state[1].grid);
+    const max2 = getMaxTile(state[2].grid);
+
+    saveRecord(1, playerNames[1], state[1].score, max1, 'retro');
+    saveRecord(2, playerNames[2], state[2].score, max2, 'cyber');
+
+    const winner = state[1].score > state[2].score ? playerNames[1] :
+                   state[2].score > state[1].score ? playerNames[2] : null;
+
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay active results-modal';
+    modal.id = 'results-modal';
+    modal.innerHTML = `
+        <div class="modal-box" style="max-width:520px; border-color:var(--cyber-neon);">
+            <div class="modal-title" style="font-size:22px;">🏆 ФИНАЛЬНЫЕ РЕЗУЛЬТАТЫ</div>
+            <div class="modal-body">
+                <div class="result-vs">
+                    <div class="result-player">
+                        <div class="result-name-retro">${escapeHtml(playerNames[1])}</div>
+                        <div class="result-score" style="color:var(--retro-gold);">${state[1].score.toLocaleString()}</div>
+                        <div class="result-max">MAX: ${max1}</div>
+                    </div>
+                    <div style="color:#666; font-size:24px; font-family:Orbitron;">VS</div>
+                    <div class="result-player">
+                        <div class="result-name-cyber">${escapeHtml(playerNames[2])}</div>
+                        <div class="result-score" style="color:var(--cyber-neon);">${state[2].score.toLocaleString()}</div>
+                        <div class="result-max">MAX: ${max2}</div>
+                    </div>
+                </div>
+                <div class="result-winner">
+                    ${winner ? `🏆 ПОБЕДИЛ: ${escapeHtml(winner)}!` : '🤝 НИЧЬЯ!'}
+                </div>
+            </div>
+            <div class="modal-btns">
+                <button class="btn-generic" onclick="document.getElementById('results-modal').remove(); goToMenu();" style="border-color:var(--cyber-neon); color:var(--cyber-neon);">В МЕНЮ</button>
+                <button class="btn-generic" onclick="document.getElementById('results-modal').remove();" style="border-color:#666; color:#888;">ЗАКРЫТЬ</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// ========== LEADERBOARD ==========
+function getRecords() {
+  try { return JSON.parse(localStorage.getItem('2048duel_records') || '[]'); } catch { return []; }
+}
+
+function saveRecord(player, name, score, bestTile, style) {
+  const records = getRecords();
+  records.push({ name, score, bestTile, style, date: new Date().toLocaleDateString('ru-RU') });
+  records.sort((a, b) => b.score - a.score);
+  const top = records.slice(0, 20);
+  localStorage.setItem('2048duel_records', JSON.stringify(top));
+}
+
+function renderLeaderboard() {
+  const records = getRecords();
+  const tbody = document.getElementById('lb-body');
+  if (!records.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="lb-empty">NO RECORDS YET</td></tr>';
+    return;
+  }
+  const medals = ['gold', 'silver', 'bronze'];
+  tbody.innerHTML = records.map((r, i) => `
+    <tr>
+      <td><span class="lb-rank ${medals[i] || ''}">${i < 3 ? ['◆','◇','▷'][i] : (i + 1)}</span></td>
+      <td class="${r.style === 'retro' ? 'lb-player-retro' : 'lb-player-cyber'}">${escapeHtml(r.name)}</td>
+      <td class="${r.style === 'retro' ? 'lb-style-retro' : 'lb-style-cyber'}">${r.style === 'retro' ? 'RETRO' : 'CYBERPUNK'}</td>
+      <td class="lb-score">${r.score.toLocaleString()}</td>
+      <td class="lb-best">${r.bestTile}</td>
+      <td class="lb-date">${r.date}</td>
+    </tr>
+  `).join('');
+}
+
+function escapeHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function clearLeaderboard() {
+  localStorage.removeItem('2048duel_records');
+  renderLeaderboard();
+  showToast('RECORDS CLEARED');
+}
+
+// ========== SCREENS ==========
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function startGame() {
+  playerNames[1] = (document.getElementById('p1-name').value.trim() || 'PLAYER 1').toUpperCase();
+  playerNames[2] = (document.getElementById('p2-name').value.trim() || 'PLAYER 2').toUpperCase();
+  document.getElementById('p1-display').textContent = playerNames[1];
+  document.getElementById('p2-display').textContent = playerNames[2];
+  resetGame();
+  showScreen('screen-game');
+}
+
+function goToMenu() {
+  saveCurrentScores();
+  showScreen('screen-menu');
+}
+
+function showLeaderboard() {
+  leaderboardFrom = document.querySelector('#screen-game.active') ? 'game' : 'menu';
+  renderLeaderboard();
+  showScreen('screen-leaderboard');
+}
+
+function leaderboardBack() {
+  showScreen(leaderboardFrom === 'game' ? 'screen-game' : 'screen-menu');
+}
+
+function saveCurrentScores() {
+  for (let p = 1; p <= 2; p++) {
+    if (state[p].score > 0) {
+      const style = p === 1 ? 'retro' : 'cyber';
+      const best = getMaxTile(state[p].grid);
+      saveRecord(p, playerNames[p], state[p].score, best, style);
+    }
+  }
+}
+
+// ========== GRID LOGIC ==========
+function newGrid() {
+  return Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
+}
+
+function addRandom(grid) {
+  const empties = [];
+  for (let r = 0; r < SIZE; r++)
+    for (let c = 0; c < SIZE; c++)
+      if (!grid[r][c]) empties.push([r, c]);
+  if (!empties.length) return false;
+  const [r, c] = empties[Math.floor(Math.random() * empties.length)];
+  grid[r][c] = Math.random() < 0.85 ? 2 : 4;
+  return [r, c];
+}
+
+function cloneGrid(g) { return g.map(r => [...r]); }
+
+function gridsEqual(a, b) {
+  for (let r = 0; r < SIZE; r++)
+    for (let c = 0; c < SIZE; c++)
+      if (a[r][c] !== b[r][c]) return false;
+  return true;
+}
+
+function slideRow(row) {
+  let arr = row.filter(x => x);
+  let score = 0;
+  const merged = [];
+  for (let i = 0; i < arr.length - 1; i++) {
+    if (arr[i] === arr[i + 1] && !merged.includes(i)) {
+      arr[i] *= 2;
+      score += arr[i];
+      arr.splice(i + 1, 1);
+      merged.push(i);
+    }
+  }
+  while (arr.length < SIZE) arr.push(0);
+  return { row: arr, score };
+}
+
+function move(grid, dir) {
+  let score = 0;
+  let changed = false;
+  let newGrid = cloneGrid(grid);
+  const mergePositions = [];
+
+  const process = (rows) => {
+    rows.forEach(r => {
+      const orig = [...r.row()];
+      const { row, score: s } = slideRow(orig);
+      score += s;
+      if (!orig.every((v, i) => v === row[i])) changed = true;
+      r.set(row);
+    });
+  };
+
+  if (dir === 'left') {
+    for (let r = 0; r < SIZE; r++) {
+      process([{
+        row: () => newGrid[r],
+        set: (v) => { newGrid[r] = v; }
+      }]);
+    }
+  } else if (dir === 'right') {
+    for (let r = 0; r < SIZE; r++) {
+      process([{
+        row: () => [...newGrid[r]].reverse(),
+        set: (v) => { newGrid[r] = v.reverse(); }
+      }]);
+    }
+  } else if (dir === 'up') {
+    for (let c = 0; c < SIZE; c++) {
+      const col = newGrid.map(r => r[c]);
+      const { row, score: s } = slideRow(col);
+      if (!col.every((v, i) => v === row[i])) changed = true;
+      score += s;
+      row.forEach((v, r) => { newGrid[r][c] = v; });
+    }
+  } else if (dir === 'down') {
+    for (let c = 0; c < SIZE; c++) {
+      const col = newGrid.map(r => r[c]).reverse();
+      const { row, score: s } = slideRow(col);
+      if (!col.every((v, i) => v === row[i])) changed = true;
+      score += s;
+      row.reverse().forEach((v, r) => { newGrid[r][c] = v; });
+    }
+  }
+
+  return { grid: newGrid, score, changed };
+}
+
+function canMove(grid) {
+  for (let r = 0; r < SIZE; r++)
+    for (let c = 0; c < SIZE; c++) {
+      if (!grid[r][c]) return true;
+      if (c < SIZE - 1 && grid[r][c] === grid[r][c + 1]) return true;
+      if (r < SIZE - 1 && grid[r][c] === grid[r + 1][c]) return true;
+    }
+  return false;
+}
+
+function getMaxTile(grid) {
+  return Math.max(...grid.flat());
+}
+
+// ========== GAME LOGIC ==========
+function initBoard(p) {
+  state[p].grid = newGrid();
+  state[p].score = 0;
+  state[p].over = false;
+  state[p].won = false;
+  state[p].history = [];
+  addRandom(state[p].grid);
+  addRandom(state[p].grid);
+  document.getElementById(`overlay-${p}`).style.display = 'none';
+  renderBoard(p);
+  updateScoreDisplay(p);
+}
+
+function resetGame() {
+  clearFinalTimer();
+  initBoard(1);
+  initBoard(2);
+  setActive(1);
+  closeModal();
+}
+
+function resetSingleBoard(p) {
+  clearFinalTimer();
+  initBoard(p);
+  closeModal();
+}
+
+function setActive(p) {
+  activePlayer = p;
+  const active = p;
+  const inactive = p === 1 ? 2 : 1;
+  document.getElementById(`p${active}-active`).style.opacity = '1';
+  document.getElementById(`p${active}-active`).style.animation = '';
+  document.getElementById(`p${inactive}-active`).style.opacity = '0.15';
+  document.getElementById(`p${inactive}-active`).style.animation = 'none';
+}
+
+function doMove(p, dir) {
+  if (state[p].over) return;
+  const prev = cloneGrid(state[p].grid);
+  const { grid, score, changed } = move(state[p].grid, dir);
+  if (!changed) return;
+
+  state[p].history.push({ grid: prev, score: state[p].score });
+  if (state[p].history.length > 5) state[p].history.shift();
+
+  state[p].grid = grid;
+  state[p].score += score;
+  if (state[p].score > state[p].best) state[p].best = state[p].score;
+
+  const pos = addRandom(state[p].grid);
+  renderBoard(p, pos);
+  updateScoreDisplay(p);
+
+  const max = getMaxTile(state[p].grid);
+  if (max >= 2048 && !state[p].won) {
+    state[p].won = true;
+    showWin(p, max);
+  } else if (!canMove(state[p].grid)) {
+    state[p].over = true;
+    showGameOver(p);
+    const style = p === 1 ? 'retro' : 'cyber';
+    saveRecord(p, playerNames[p], state[p].score, max, style);
+  }
+}
+
+function undoMove(p) {
+  if (!isAdmin2048) { showToast('🔒 Только для администрации'); return; }
+  if (!state[p].history.length) { showToast('NO UNDO AVAILABLE'); return; }
+  const prev = state[p].history.pop();
+  state[p].grid = prev.grid;
+  state[p].score = prev.score;
+  state[p].over = false;
+  document.getElementById(`overlay-${p}`).style.display = 'none';
+  renderBoard(p);
+  updateScoreDisplay(p);
+}
+
+function showGameOver(p) {
+  if (gameEnded) return;
+  gameEnded = true;
+
+  state[1].over = true;
+  state[2].over = true;
+
+  const el = document.getElementById(`overlay-${p}`);
+  const title = document.getElementById(`overlay-${p}-title`);
+  const scoreEl = document.getElementById(`overlay-${p}-score`);
+  el.classList.remove('win-overlay');
+  title.textContent = 'GAME OVER';
+  scoreEl.textContent = `SCORE: ${state[p].score.toLocaleString()}`;
+  el.style.display = 'flex';
+  showToast(`${playerNames[p]}: GAME OVER! Score: ${state[p].score.toLocaleString()}`);
+
+  // Start 30s timer
+  finalCountdown = 30;
+  const overlay = document.createElement('div');
+  overlay.id = 'final-timer-overlay';
+  overlay.className = 'final-timer-overlay';
+  overlay.innerHTML = `
+      <div class="final-timer-box">
+          <div class="final-timer-title">ИГРА ОКОНЧЕНА</div>
+          <div class="final-timer-count" id="final-count">30</div>
+          <div class="final-timer-sub">сек до результатов</div>
+      </div>
+  `;
+  document.body.appendChild(overlay);
+
+  finalTimer = setInterval(() => {
+      finalCountdown--;
+      const countEl = document.getElementById('final-count');
+      if (countEl) countEl.textContent = finalCountdown;
+      if (finalCountdown <= 0) {
+          clearInterval(finalTimer);
+          finalTimer = null;
+          if (overlay) overlay.remove();
+          showFinalResults();
+      }
+  }, 1000);
+}
+
+function showWin(p, tile) {
+  const el = document.getElementById(`overlay-${p}`);
+  const title = document.getElementById(`overlay-${p}-title`);
+  const scoreEl = document.getElementById(`overlay-${p}-score`);
+  el.classList.add('win-overlay');
+  title.textContent = `${tile} REACHED!`;
+  scoreEl.textContent = `SCORE: ${state[p].score.toLocaleString()}`;
+  el.style.display = 'flex';
+  showToast(`🏆 ${playerNames[p]} REACHED ${tile}!`);
+  setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+
+// ========== RENDER ==========
+function renderBoard(p, newPos = null) {
+  const board = document.getElementById(`board-${p}`);
+  const g = state[p].grid;
+  board.innerHTML = '';
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      const val = g[r][c];
+      const cell = document.createElement('div');
+      cell.className = `cell cell-${val}`;
+      if (val) cell.textContent = val;
+      if (newPos && newPos[0] === r && newPos[1] === c) cell.classList.add('new-tile');
+      board.appendChild(cell);
+    }
+  }
+}
+
+function updateScoreDisplay(p) {
+  document.getElementById(`p${p}-score`).textContent = state[p].score.toLocaleString();
+  document.getElementById(`p${p}-best`).textContent = state[p].best.toLocaleString();
+  const max = getMaxTile(state[p].grid);
+  document.getElementById(`p${p}-max`).textContent = max || 0;
+  // Progress to 2048
+  const pct = Math.min(100, Math.log2(max || 1) / Math.log2(2048) * 100);
+  document.getElementById(`p${p}-progress`).style.width = pct.toFixed(1) + '%';
+  document.getElementById(`p${p}-progress-label`).textContent = `TO 2048: ${pct.toFixed(0)}%`;
+}
+
+// ========== KEYBOARD ==========
+const KEY_MAP = {
+  'ArrowLeft': 'left',
+  'ArrowRight': 'right',
+  'ArrowUp': 'up',
+  'ArrowDown': 'down'
+};
+
+document.addEventListener('keydown', (e) => {
+  if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) {
+    e.preventDefault();
+    if (!document.getElementById('screen-game').classList.contains('active')) return;
+    const dir = KEY_MAP[e.key];
+    doMove(activePlayer, dir);
+    return;
+  }
+  if (e.key === '1') { if (document.getElementById('screen-game').classList.contains('active')) setActive(1); }
+  if (e.key === '2') { if (document.getElementById('screen-game').classList.contains('active')) setActive(2); }
+  if (e.key === 'Escape') closeModal();
+});
+
+// Touch / swipe support
+let touchStartX = 0, touchStartY = 0;
+
+document.addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+document.addEventListener('touchend', (e) => {
+  if (!document.getElementById('screen-game').classList.contains('active')) return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  const w = window.innerWidth;
+  const x = e.changedTouches[0].clientX;
+
+  // Detect which side was touched
+  const touchedPlayer = x < w / 2 ? 1 : 2;
+
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 30) {
+    doMove(touchedPlayer, dx > 0 ? 'right' : 'left');
+    setActive(touchedPlayer);
+  } else if (Math.abs(dy) > 30) {
+    doMove(touchedPlayer, dy > 0 ? 'down' : 'up');
+    setActive(touchedPlayer);
+  }
+}, { passive: true });
+
+// ========== MODAL ==========
+let modalCb = null;
+
+function confirmAction(msg, cb) {
+  document.getElementById('modal-title').textContent = 'CONFIRM';
+  document.getElementById('modal-body').textContent = msg;
+  modalCb = cb;
+  document.getElementById('modal').classList.add('active');
+  document.getElementById('modal-confirm').onclick = () => { cb(); closeModal(); };
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('active');
+  modalCb = null;
+}
+
+// ========== TOAST ==========
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ========== INIT ==========
+// Pre-fill name from localStorage if saved
+const saved1 = localStorage.getItem('2048duel_name1');
+const saved2 = localStorage.getItem('2048duel_name2');
+if (saved1) document.getElementById('p1-name').value = saved1;
+if (saved2) document.getElementById('p2-name').value = saved2;
+
+document.getElementById('p1-name').addEventListener('input', (e) => {
+  localStorage.setItem('2048duel_name1', e.target.value);
+});
+document.getElementById('p2-name').addEventListener('input', (e) => {
+  localStorage.setItem('2048duel_name2', e.target.value);
+});
+</script>
+</body>
+</html>
