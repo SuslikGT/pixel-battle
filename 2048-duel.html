@@ -250,21 +250,37 @@ body {
   width: 100%;
 }
 
+.btn-play-wrap {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
 .btn-play {
   font-family: 'Orbitron', sans-serif;
-  font-size: clamp(12px, 2.5vw, 20px);
+  font-size: clamp(11px, 2vw, 16px);
   font-weight: 900;
-  letter-spacing: 0.2em;
-  padding: 18px 60px;
+  letter-spacing: 0.15em;
+  padding: 16px 36px;
   border: none;
   cursor: pointer;
   position: relative;
   overflow: hidden;
   clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
-  background: linear-gradient(135deg, #ffb800, #ff8c00 40%, #ff006e 70%, #00f5ff);
   color: #000;
   text-transform: uppercase;
   transition: filter 0.2s, transform 0.2s;
+  min-width: 180px;
+}
+
+.btn-play.retro-btn {
+  background: linear-gradient(135deg, #ffb800, #ff8c00, #ff4400);
+}
+
+.btn-play.cyber-btn {
+  background: linear-gradient(135deg, #ff006e, #7b00ff, #00f5ff);
 }
 
 .btn-play:hover {
@@ -273,6 +289,39 @@ body {
 }
 
 .btn-play:active { transform: scale(0.97); }
+
+.btn-play:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(0.6);
+}
+
+.btn-play:disabled:hover {
+  transform: none;
+  filter: grayscale(0.6);
+}
+
+.play-timer-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: #fff;
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
+.play-timer-text {
+  position: absolute;
+  bottom: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: var(--cyber-neon);
+  font-family: 'Share Tech Mono', monospace;
+  white-space: nowrap;
+  letter-spacing: 0.1em;
+}
 
 .menu-hint {
   font-size: 11px;
@@ -1212,38 +1261,7 @@ body {
 }
 
 /* SIDE CLICK SELECTION */
-.side-retro, .side-cyber {
-    cursor: pointer;
-    transition: opacity 0.2s, box-shadow 0.2s;
-    position: relative;
-}
-.side-retro:hover, .side-cyber:hover {
-    opacity: 1 !important;
-}
-.side-inactive {
-    opacity: 0.55;
-}
-.side-active {
-    opacity: 1;
-    box-shadow: inset 0 0 80px rgba(0,245,255,0.04);
-}
-.side-retro.side-active {
-    box-shadow: inset 0 0 80px rgba(255,140,0,0.06);
-}
-.click-hint {
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    opacity: 0.5;
-    text-align: center;
-    margin-top: 6px;
-    animation: clickPulse 2s ease-in-out infinite;
-}
-.side-retro .click-hint { color: var(--retro-gold); font-family: 'VT323', monospace; font-size: 16px; }
-.side-cyber .click-hint { color: var(--cyber-neon); font-family: 'Share Tech Mono', monospace; }
-@keyframes clickPulse {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 0.9; }
-}
+/* Side selection is done in menu only */
 
 /* Responsive */
 
@@ -1364,38 +1382,7 @@ body {
 }
 
 /* SIDE CLICK SELECTION */
-.side-retro, .side-cyber {
-    cursor: pointer;
-    transition: opacity 0.2s, box-shadow 0.2s;
-    position: relative;
-}
-.side-retro:hover, .side-cyber:hover {
-    opacity: 1 !important;
-}
-.side-inactive {
-    opacity: 0.55;
-}
-.side-active {
-    opacity: 1;
-    box-shadow: inset 0 0 80px rgba(0,245,255,0.04);
-}
-.side-retro.side-active {
-    box-shadow: inset 0 0 80px rgba(255,140,0,0.06);
-}
-.click-hint {
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    opacity: 0.5;
-    text-align: center;
-    margin-top: 6px;
-    animation: clickPulse 2s ease-in-out infinite;
-}
-.side-retro .click-hint { color: var(--retro-gold); font-family: 'VT323', monospace; font-size: 16px; }
-.side-cyber .click-hint { color: var(--cyber-neon); font-family: 'Share Tech Mono', monospace; }
-@keyframes clickPulse {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 0.9; }
-}
+/* Side selection is done in menu only */
 
 /* Responsive */
 
@@ -1418,15 +1405,26 @@ body {
   <div class="menu-divider-line"></div>
 
   <div class="menu-content">
+    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:center; margin-bottom:8px;">
+      <div class="auth-bar" id="authBarMenu">
+        <button class="btn-login" id="loginBtnMenu" onclick="signInWithGoogle2048()">🔑 Войти через Google</button>
+        <div class="user-bar" id="userBarMenu">
+          <img id="userAvatarMenu" src="" alt="">
+          <span id="userNameMenu"></span>
+          <button onclick="signOut2048()">Выйти</button>
+        </div>
+      </div>
+      <button class="btn-topbar" onclick="goToPixel()" style="font-size:10px; padding:6px 12px;">🎨 PIXEL BATTLE</button>
+    </div>
     <div class="menu-title">
       <div class="title-duel">2048 DUEL</div>
       <div class="title-sub">RETRO vs CYBERPUNK · TWO PLAYERS</div>
     </div>
 
     <div class="player-select">
-      <div class="player-card retro">
+      <div class="player-card retro" id="card-retro" onclick="selectSide(1)">
         <div class="card-header">▶ PLAYER 1 — LEFT</div>
-        <input class="card-name-input" id="p1-name" type="text" placeholder="ENTER NAME..." maxlength="14" value="PLAYER 1">
+        <div class="card-name-display" id="p1-name-display" style="font-family:'VT323',monospace; font-size:22px; color:var(--retro-gold); margin:8px 0; min-height:28px;">—</div>
         <div class="card-style-label">✦ RETRO ARCADE ✦</div>
         <div class="card-keys">
           MOVE: ARROW KEYS<br>
@@ -1437,9 +1435,9 @@ body {
 
       <div class="vs-badge">VS</div>
 
-      <div class="player-card cyber">
+      <div class="player-card cyber" id="card-cyber" onclick="selectSide(2)">
         <div class="card-header">▷ PLAYER 2 — RIGHT</div>
-        <input class="card-name-input" id="p2-name" type="text" placeholder="ENTER NAME..." maxlength="14" value="PLAYER 2">
+        <div class="card-name-display" id="p2-name-display" style="font-family:'Orbitron',sans-serif; font-size:14px; color:var(--cyber-neon); margin:8px 0; min-height:28px;">—</div>
         <div class="card-style-label">◈ CYBERPUNK 2099 ◈</div>
         <div class="card-keys">
           MOVE: ARROW KEYS<br>
@@ -1450,11 +1448,22 @@ body {
     </div>
 
     <div class="menu-controls">
-      <button class="btn-play" onclick="startGame()">▶ PLAY NOW ◀</button>
+      <div class="btn-play-wrap">
+        <button class="btn-play retro-btn" id="btnPlayRetro" onclick="startGame(1)" disabled>
+          ▶ ИГРАТЬ ЗА RETRO
+          <div class="play-timer-bar" id="timerBarRetro"></div>
+          <div class="play-timer-text" id="timerTextRetro"></div>
+        </button>
+        <button class="btn-play cyber-btn" id="btnPlayCyber" onclick="startGame(2)" disabled>
+          ▷ ИГРАТЬ ЗА CYBER
+          <div class="play-timer-bar" id="timerBarCyber"></div>
+          <div class="play-timer-text" id="timerTextCyber"></div>
+        </button>
+      </div>
       <button class="btn-generic" onclick="showLeaderboard()" style="font-size:11px; padding:10px 24px; border-color:#2a2a2a; color:#555;">
         ◈ LEADERBOARD ◈
       </button>
-      <div class="menu-hint">PRESS [1] OR [2] DURING GAME TO SWITCH CONTROL</div>
+      <div class="menu-hint">ВОЙДИ ЧЕРЕЗ GOOGLE · ВЫБЕРИ СТОРОНУ · НАЖМИ PLAY</div>
     </div>
   </div>
 </div>
@@ -1528,8 +1537,7 @@ body {
           <button class="btn-retro primary admin-only" onclick="resetSingleBoard(1)">↺ RETRY</button>
           <button class="btn-retro admin-only" onclick="undoMove(1)">◄ UNDO</button>
         </div>
-        <div class="keys-info">ARROWS TO MOVE · CLICK SIDE TO SELECT</div>
-        <div class="click-hint">👆 КЛИКНИ СЮДА ЧТОБЫ ИГРАТЬ ЗА RETRO</div>
+        <div class="keys-info">ARROWS TO MOVE</div>
       </div>
     </div>
 
@@ -1575,8 +1583,7 @@ body {
           <button class="btn-cyber primary admin-only" onclick="resetSingleBoard(2)">↺ RETRY</button>
           <button class="btn-cyber admin-only" onclick="undoMove(2)">◄ UNDO</button>
         </div>
-        <div class="keys-info">ARROWS TO MOVE · CLICK SIDE TO SELECT</div>
-        <div class="click-hint">👆 КЛИКНИ СЮДА ЧТОБЫ ИГРАТЬ ЗА CYBER</div>
+        <div class="keys-info">ARROWS TO MOVE</div>
       </div>
     </div>
   </div>
@@ -1646,25 +1653,82 @@ const state = {
 const playerNames = { 1: 'PLAYER 1', 2: 'PLAYER 2' };
 let selectedPlayer = null;
 
-// Menu card selection
-document.addEventListener('DOMContentLoaded', () => {
-    const retroCard = document.querySelector('.player-card.retro');
-    const cyberCard = document.querySelector('.player-card.cyber');
+// Side selection + auto-start timer
+let playTimer = null;
+let playCountdown = 10;
+
+function selectSide(p) {
+    if (!currentUser2048) {
+        showToast('🔒 Сначала войди через Google');
+        return;
+    }
+    selectedPlayer = p;
+    const retroCard = document.getElementById('card-retro');
+    const cyberCard = document.getElementById('card-cyber');
     if (retroCard) {
-        retroCard.addEventListener('click', () => {
-            selectedPlayer = 1;
-            retroCard.classList.add('selected');
-            if (cyberCard) cyberCard.classList.remove('selected');
-        });
+        retroCard.classList.toggle('selected', p === 1);
     }
     if (cyberCard) {
-        cyberCard.addEventListener('click', () => {
-            selectedPlayer = 2;
-            cyberCard.classList.add('selected');
-            if (retroCard) retroCard.classList.remove('selected');
-        });
+        cyberCard.classList.toggle('selected', p === 2);
     }
-});
+    // Update name displays from Google
+    const userName = currentUser2048.displayName || currentUser2048.email || 'PLAYER';
+    const p1disp = document.getElementById('p1-name-display');
+    const p2disp = document.getElementById('p2-name-display');
+    if (p1disp) p1disp.textContent = p === 1 ? userName.toUpperCase() : '—';
+    if (p2disp) p2disp.textContent = p === 2 ? userName.toUpperCase() : '—';
+    // Enable both play buttons
+    const btnRetro = document.getElementById('btnPlayRetro');
+    const btnCyber = document.getElementById('btnPlayCyber');
+    if (btnRetro) btnRetro.disabled = false;
+    if (btnCyber) btnCyber.disabled = false;
+    // Start auto-start timer on the OTHER button
+    startPlayTimer(p === 1 ? 2 : 1);
+}
+
+function startPlayTimer(autoSide) {
+    if (playTimer) clearInterval(playTimer);
+    playCountdown = 10;
+    const barRetro = document.getElementById('timerBarRetro');
+    const barCyber = document.getElementById('timerBarCyber');
+    const textRetro = document.getElementById('timerTextRetro');
+    const textCyber = document.getElementById('timerTextCyber');
+    // Reset both
+    if (barRetro) barRetro.style.width = '0%';
+    if (barCyber) barCyber.style.width = '0%';
+    if (textRetro) textRetro.textContent = '';
+    if (textCyber) textCyber.textContent = '';
+    // Set active timer on autoSide
+    const targetBar = autoSide === 1 ? barRetro : barCyber;
+    const targetText = autoSide === 1 ? textRetro : textCyber;
+    if (targetText) targetText.textContent = 'Автостарт через 10с...';
+    playTimer = setInterval(() => {
+        playCountdown--;
+        const pct = ((10 - playCountdown) / 10) * 100;
+        if (targetBar) targetBar.style.width = pct + '%';
+        if (targetText) targetText.textContent = playCountdown > 0 ? `Автостарт через ${playCountdown}с...` : 'ЗАПУСК...';
+        if (playCountdown <= 0) {
+            clearInterval(playTimer);
+            playTimer = null;
+            startGame(autoSide);
+        }
+    }, 1000);
+}
+
+function clearPlayTimer() {
+    if (playTimer) {
+        clearInterval(playTimer);
+        playTimer = null;
+    }
+    const barRetro = document.getElementById('timerBarRetro');
+    const barCyber = document.getElementById('timerBarCyber');
+    const textRetro = document.getElementById('timerTextRetro');
+    const textCyber = document.getElementById('timerTextCyber');
+    if (barRetro) barRetro.style.width = '0%';
+    if (barCyber) barCyber.style.width = '0%';
+    if (textRetro) textRetro.textContent = '';
+    if (textCyber) textCyber.textContent = '';
+}
 
 // Firebase Admin
 const firebaseConfig = {
@@ -1702,13 +1766,19 @@ function signOut2048() {
 }
 
 function updateAuthUI2048() {
+    // Game screen auth
     const loginBtn = document.getElementById('loginBtn2048');
     const userBar = document.getElementById('userBar2048');
     const overlay = document.getElementById('loginOverlay2048');
     const sideLeft = document.getElementById('side-left');
     const sideRight = document.getElementById('side-right');
 
+    // Menu screen auth
+    const loginBtnMenu = document.getElementById('loginBtnMenu');
+    const userBarMenu = document.getElementById('userBarMenu');
+
     if (currentUser2048) {
+        // Game screen
         if (loginBtn) loginBtn.style.display = 'none';
         if (userBar) userBar.style.display = 'flex';
         const nameEl = document.getElementById('userName2048');
@@ -1722,12 +1792,23 @@ function updateAuthUI2048() {
         if (!document.querySelector('.side-active')) {
             setActive(1);
         }
+        // Menu screen
+        if (loginBtnMenu) loginBtnMenu.style.display = 'none';
+        if (userBarMenu) userBarMenu.style.display = 'flex';
+        const nameMenu = document.getElementById('userNameMenu');
+        const avatarMenu = document.getElementById('userAvatarMenu');
+        if (nameMenu) nameMenu.textContent = currentUser2048.displayName || currentUser2048.email || 'Player';
+        if (avatarMenu) avatarMenu.src = currentUser2048.photoURL || '';
     } else {
+        // Game screen
         if (loginBtn) loginBtn.style.display = '';
         if (userBar) userBar.style.display = 'none';
         if (overlay) overlay.classList.remove('hidden');
         if (sideLeft) { sideLeft.classList.add('side-inactive'); sideLeft.classList.remove('side-active'); }
         if (sideRight) { sideRight.classList.add('side-inactive'); sideRight.classList.remove('side-active'); }
+        // Menu screen
+        if (loginBtnMenu) loginBtnMenu.style.display = '';
+        if (userBarMenu) userBarMenu.style.display = 'none';
     }
     updateAdminUI();
 }
@@ -1742,6 +1823,7 @@ function goToPixel() {
     saveCurrentScores();
     clearFinalTimer();
     clearInactivityTimer();
+    clearPlayTimer();
     window.location.href = 'index.html';
 }
 
@@ -1857,29 +1939,34 @@ function showScreen(id) {
   document.getElementById(id).classList.add('active');
 }
 
-function startGame() {
+function startGame(forcedSide) {
+  clearPlayTimer();
   if (!currentUser2048) {
     showToast('🔊 Сначала войдите через Google!');
     return;
   }
-  if (!selectedPlayer) {
+  const side = forcedSide || selectedPlayer;
+  if (!side) {
     showToast('👆 Выбери сторону: кликни на RETRO или CYBER');
     return;
   }
-  playerNames[1] = (document.getElementById('p1-name').value.trim() || 'PLAYER 1').toUpperCase();
-  playerNames[2] = (document.getElementById('p2-name').value.trim() || 'PLAYER 2').toUpperCase();
+  selectedPlayer = side;
+  const userName = currentUser2048.displayName || currentUser2048.email || 'PLAYER';
+  playerNames[1] = side === 1 ? userName.toUpperCase() : 'BOT';
+  playerNames[2] = side === 2 ? userName.toUpperCase() : 'BOT';
   document.getElementById('p1-display').textContent = playerNames[1];
   document.getElementById('p2-display').textContent = playerNames[2];
   resetGame();
   showScreen('screen-game');
   updateAuthUI2048();
-  setActive(selectedPlayer);
+  setActive(side);
 }
 
 function goToMenu() {
   saveCurrentScores();
   clearFinalTimer();
   clearInactivityTimer();
+  clearPlayTimer();
   resetGame();
   showScreen('screen-menu');
 }
@@ -2030,6 +2117,7 @@ function initBoard(p) {
 function resetGame() {
   clearFinalTimer();
   clearInactivityTimer();
+  clearPlayTimer();
   initBoard(1);
   initBoard(2);
   setActive(selectedPlayer || 1);
@@ -2053,17 +2141,6 @@ function setActive(p) {
   document.getElementById(`p${active}-active`).style.animation = '';
   document.getElementById(`p${inactive}-active`).style.opacity = '0.15';
   document.getElementById(`p${inactive}-active`).style.animation = 'none';
-
-  const sideLeft = document.getElementById('side-left');
-  const sideRight = document.getElementById('side-right');
-  if (sideLeft) {
-    sideLeft.classList.toggle('side-active', p === 1);
-    sideLeft.classList.toggle('side-inactive', p !== 1);
-  }
-  if (sideRight) {
-    sideRight.classList.toggle('side-active', p === 2);
-    sideRight.classList.toggle('side-inactive', p !== 2);
-  }
 }
 
 function doMove(p, dir) {
