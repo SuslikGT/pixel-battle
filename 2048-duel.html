@@ -184,6 +184,11 @@ body {
   margin-bottom: 12px;
 }
 
+.player-card.retro .card-header,
+.player-card.cyber .card-header {
+  font-size: 10px;
+}
+
 .player-card.retro .card-header { color: var(--retro-gold); }
 .player-card.cyber .card-header { color: var(--cyber-neon); }
 
@@ -210,13 +215,13 @@ body {
 }
 
 .card-style-label {
-  font-size: 11px;
+  font-size: 18px;
   letter-spacing: 0.2em;
   opacity: 0.6;
 }
 
 .player-card.retro .card-style-label { color: var(--retro-amber); font-family: 'VT323', monospace; font-size: 18px; }
-.player-card.cyber .card-style-label { color: var(--cyber-neon); font-family: 'Orbitron', sans-serif; }
+.player-card.cyber .card-style-label { color: var(--cyber-neon); font-family: 'Orbitron', sans-serif; font-size: 18px; }
 
 .card-keys {
   margin-top: 14px;
@@ -1514,7 +1519,7 @@ body {
             <div class="score-label">MAX</div>
             <div class="score-value" id="p1-max">0</div>
           </div>
-          <div class="active-badge" id="p1-active">ACTIVE</div>
+          <div class="active-badge" id="p1-active" style="display:none;">ACTIVE</div>
         </div>
         <div class="progress-bar">
           <div class="progress-fill" id="p1-progress" style="width:0%"></div>
@@ -1560,7 +1565,7 @@ body {
             <div class="score-label">MAX</div>
             <div class="score-value" id="p2-max">0</div>
           </div>
-          <div class="active-badge" id="p2-active" style="opacity:0.2; animation:none;">ACTIVE</div>
+          <div class="active-badge" id="p2-active" style="display:none;">ACTIVE</div>
         </div>
         <div class="progress-bar">
           <div class="progress-fill" id="p2-progress" style="width:0%"></div>
@@ -1788,10 +1793,7 @@ function updateAuthUI2048() {
         if (overlay) overlay.classList.add('hidden');
         if (sideLeft) sideLeft.classList.remove('side-inactive');
         if (sideRight) sideRight.classList.remove('side-inactive');
-        // Default active side if none selected
-        if (!document.querySelector('.side-active')) {
-            setActive(1);
-        }
+        // Side chosen in menu, no default needed
         // Menu screen
         if (loginBtnMenu) loginBtnMenu.style.display = 'none';
         if (userBarMenu) userBarMenu.style.display = 'flex';
@@ -1956,10 +1958,17 @@ function startGame(forcedSide) {
   playerNames[2] = side === 2 ? userName.toUpperCase() : 'BOT';
   document.getElementById('p1-display').textContent = playerNames[1];
   document.getElementById('p2-display').textContent = playerNames[2];
-  resetGame();
+  // FULL RESET before starting
+  clearFinalTimer();
+  clearInactivityTimer();
+  clearPlayTimer();
+  state[1] = { grid: [], score: 0, best: 0, over: false, won: false, history: [] };
+  state[2] = { grid: [], score: 0, best: 0, over: false, won: false, history: [] };
+  initBoard(1);
+  initBoard(2);
+  activePlayer = side;
   showScreen('screen-game');
   updateAuthUI2048();
-  setActive(side);
 }
 
 function goToMenu() {
@@ -2118,9 +2127,11 @@ function resetGame() {
   clearFinalTimer();
   clearInactivityTimer();
   clearPlayTimer();
+  state[1] = { grid: [], score: 0, best: 0, over: false, won: false, history: [] };
+  state[2] = { grid: [], score: 0, best: 0, over: false, won: false, history: [] };
   initBoard(1);
   initBoard(2);
-  setActive(selectedPlayer || 1);
+  activePlayer = selectedPlayer || 1;
   closeModal();
   resetInactivityTimer();
 }
@@ -2134,13 +2145,8 @@ function resetSingleBoard(p) {
 }
 
 function setActive(p) {
+  // Side is chosen in menu ONLY - no switching during game
   activePlayer = p;
-  const active = p;
-  const inactive = p === 1 ? 2 : 1;
-  document.getElementById(`p${active}-active`).style.opacity = '1';
-  document.getElementById(`p${active}-active`).style.animation = '';
-  document.getElementById(`p${inactive}-active`).style.opacity = '0.15';
-  document.getElementById(`p${inactive}-active`).style.animation = 'none';
 }
 
 function doMove(p, dir) {
@@ -2281,10 +2287,10 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault();
     if (!document.getElementById('screen-game').classList.contains('active')) return;
     const dir = KEY_MAP[e.key];
-    doMove(activePlayer, dir);
+    // Always move the selected player from menu - no switching
+    doMove(selectedPlayer || activePlayer, dir);
     return;
   }
-  // Player selection is now done by clicking on the side
   if (e.key === 'Escape') closeModal();
 });
 
@@ -2300,41 +2306,15 @@ document.addEventListener('touchend', (e) => {
   if (!document.getElementById('screen-game').classList.contains('active')) return;
   const dx = e.changedTouches[0].clientX - touchStartX;
   const dy = e.changedTouches[0].clientY - touchStartY;
-  const w = window.innerWidth;
-  const x = e.changedTouches[0].clientX;
-
-  // Detect which side was touched
-  const touchedPlayer = x < w / 2 ? 1 : 2;
 
   if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 30) {
-    doMove(touchedPlayer, dx > 0 ? 'right' : 'left');
-    setActive(touchedPlayer);
+    doMove(selectedPlayer || activePlayer, dx > 0 ? 'right' : 'left');
   } else if (Math.abs(dy) > 30) {
-    doMove(touchedPlayer, dy > 0 ? 'down' : 'up');
-    setActive(touchedPlayer);
+    doMove(selectedPlayer || activePlayer, dy > 0 ? 'down' : 'up');
   }
 }, { passive: true });
 
 // ========== SIDE CLICK SELECTION ==========
-document.getElementById('side-left').addEventListener('click', e => {
-    if (!currentUser2048) {
-        showToast('🔒 Сначала войдите через Google');
-        return;
-    }
-    // Don't switch player if clicking a button or control
-    if (e.target.closest('button') || e.target.closest('.side-controls') || e.target.closest('.board-overlay')) return;
-    setActive(1);
-});
-
-document.getElementById('side-right').addEventListener('click', e => {
-    if (!currentUser2048) {
-        showToast('🔒 Сначала войдите через Google');
-        return;
-    }
-    if (e.target.closest('button') || e.target.closest('.side-controls') || e.target.closest('.board-overlay')) return;
-    setActive(2);
-});
-
 // ========== MODAL ==========
 let modalCb = null;
 
